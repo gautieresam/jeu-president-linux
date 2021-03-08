@@ -135,6 +135,10 @@ void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
    }
 }
 
+int taille_de_la_main(){
+    int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
+    return taille;
+}
 
 
 // Main 
@@ -153,6 +157,8 @@ int main(int argc, char const *argv[])
    melanger_cartes(jeu_de_carte);
    afficher_le_jeu_de_carte(jeu_de_carte);
 
+   int main = taille_de_la_main();
+  printf("%d",main);
 
 
 
@@ -162,8 +168,8 @@ int main(int argc, char const *argv[])
 
    // Creéation des joueurs : 
    // To do : faire une fonction pour la creation des joueurs. 
-   joueur_1 = fork();
-   joueur_2 = fork();
+   //joueur_1 = fork();
+   //joueur_2 = fork();
 
 
 
