@@ -113,8 +113,27 @@ void choix_repartition_des_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 
    int choix=0;
    NB_JOUEURS % 2 == 0 ? distribution_paire(jeu_de_carte) : distribution_impaire(jeu_de_carte);
+
 }
 
+/**
+ * \fn melanger_cartes(jeu_de_carte)
+ * \brief Fonction qui va mélanger le jeu de carte (tableau)
+ * \
+ * \param tab le tableau à melanger.
+ * \return pas de return
+*/
+void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int temp, alea;
+    //mélanger le jeu
+    for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
+      //echanger la case d'indice i avec une case random du tableau
+      temp=jeu_de_carte[i];
+      alea=rand() % (TAILLE_JEU_DE_CARTE);
+      jeu_de_carte[i]=jeu_de_carte[alea];
+      jeu_de_carte[alea]=temp;
+   }
+}
 
 
 
@@ -131,6 +150,9 @@ int main(int argc, char const *argv[])
    Initalisation_du_jeu_de_carte(jeu_de_carte);
    afficher_le_jeu_de_carte(jeu_de_carte);
    choix_repartition_des_cartes(jeu_de_carte);
+   melanger_cartes(jeu_de_carte);
+   afficher_le_jeu_de_carte(jeu_de_carte);
+
 
 
 
