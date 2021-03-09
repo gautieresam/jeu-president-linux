@@ -135,9 +135,21 @@ void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
    }
 }
 
-int taille_de_la_main(){
+int give_taille_de_la_main(){
     int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
     return taille;
+}
+
+void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int taille_main = give_taille_de_la_main();
+    int debut=taille_main*numJoueur;
+    int fin=debut+taille_main;
+
+    printf("\nJeu du joueur %d : ",numJoueur);
+    for (int i = debut; i < fin; i++){
+        printf("%d - ",jeu_de_carte[i]);
+    }
+
 }
 
 
@@ -152,15 +164,17 @@ int main(int argc, char const *argv[])
 
    //afficher_le_jeu_de_carte(jeu_de_carte);
    Initalisation_du_jeu_de_carte(jeu_de_carte);
-   afficher_le_jeu_de_carte(jeu_de_carte);
-   choix_repartition_des_cartes(jeu_de_carte);
+    //afficher_le_jeu_de_carte(jeu_de_carte);
+  // choix_repartition_des_cartes(jeu_de_carte);
    melanger_cartes(jeu_de_carte);
    afficher_le_jeu_de_carte(jeu_de_carte);
 
-   int main = taille_de_la_main();
-  printf("%d",main);
+   int taille_main = give_taille_de_la_main();
+  printf("Taille de la main : %d\n",taille_main);
 
-
+ //num joueur = de 0 à x
+ afficher_carte_joueur(0,jeu_de_carte);
+ afficher_carte_joueur(1,jeu_de_carte);
 
    // Creation ID partie 
    
