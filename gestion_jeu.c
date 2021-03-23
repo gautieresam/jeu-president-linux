@@ -30,10 +30,17 @@ void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE]){
  */
 void afficher_tab(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 
-   printf("FONCTION : AFFICHER TAB :\n");
+   printf("\nFONCTION : AFFICHER TAB du jeu :\n");
    for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
-      //printf("%d %d - \n",i,jeu_de_carte[i]);
-      printf("%d - ",jeu_de_carte[i]);
+       if (jeu_de_carte[i]==11){
+           printf("Valet - ");
+       } else if (jeu_de_carte[i]== 12){
+           printf("Dame - ");
+       }else if (jeu_de_carte[i]== 13){
+           printf("Roi - ");
+       }else{
+           printf("%d - ",jeu_de_carte[i]);
+       }
    }
 }
 
@@ -46,6 +53,7 @@ void afficher_tab(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 */
 void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int temp, alea;
+    srand(time(NULL));
     //mélanger le jeu
     for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
       //echanger la case d'indice i avec une case random du tableau
@@ -68,7 +76,16 @@ void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE])
 
     printf("\nJeu du joueur %d : ",numJoueur);
     for (int i = debut; i < fin; i++){
-        printf("%d - ",jeu_de_carte[i]);
+        if (jeu_de_carte[i]==11){
+            printf("Valet - ");
+        } else if (jeu_de_carte[i]== 12){
+            printf("Dame - ");
+        }else if (jeu_de_carte[i]== 13){
+            printf("Roi - ");
+        }else if (jeu_de_carte[i]!=0){
+            //n'affiche pas les 0 (car signifie qu'il n'y a pas de carte
+            printf("%d - ",jeu_de_carte[i]);
+        }
     }
 
 }
@@ -85,15 +102,33 @@ int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
 	return -1;
 }
 
-//return = indice, si -1 ==> carte pas dans le jeu
+/*return = indice, si 0 ==> carte pas dans le jeu
+si 1 ==> carte jouée ou passe son tour
+ si 2 ==> carte pas possible detre jouée (ordre),
+ si 3==> il fautnjouer une carte pareille
+ */
 int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]){
-	int indice=-1;
+
+    //si la carte est 0 <=> le joueur choisit de passer son tour
+    if (carte==0){
+        //le joueur passe son tour
+        printf("==> Joueur %d passe son tour",numJoueur);
+        //appeler la fonction qui permet de passer son tour
+        return 1;
+    }
+
+    int indice=-1;
 	//vérifier que la carte est dans son jeu + recupérer l'indice
 	int taille_main = give_taille_de_la_main();
 	int debut=taille_main*numJoueur;
 	int fin=debut+taille_main;
-	
-	int i=debut, flag=0;
+    int i=debut, flag=0;
+    int last_card;
+    int carte_ok=0;
+    int indiceP=indice_partie(partie);
+
+    //Verifier que la  carte existe bien dans le jeu
+	//printf("DÉBUT : %d, FIN : %d",debut,fin);
 	while(flag==0 && i< fin){
 		//printf("compare %d avec %d",jeu_de_carte[i], carte);
 		if(jeu_de_carte[i]==carte){
@@ -102,19 +137,93 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 		}
 		i++;
 	}
-	
-	if(flag==1){
+
+	//verifier si la carte est bien jouée :
+	//1. supérieur ou égal à la carte d'avant (attention à l'as et au 2)
+    last_card=get_derniere_carte(partie);
+    if (last_card==0){
+        //première carte à poser
+        carte_ok=1;
+    }else if (last_card > 2 && carte > 2){
+        //cas classique, mettre une carte suppérieur ou egale (numériquement parlant)
+        if (carte >= last_card){
+            carte_ok=1;
+        } else{
+            printf("\n==>Veuillez jouer une carte supérieure ou égale à la dernière du jeu\n");
+            return 2;//pas odre du jeu
+        }
+    }else if (last_card > 2 && carte <= 2){
+        //le joueur veut jouer un as ou un 2 au dessus d'une carte entre le 3 et le roi OK
+        carte_ok=1;
+    }else if (last_card <= 2 && carte > 2){
+        //le joueur veut jouer une carte au dessus d'un as ou un 2 PAS POSSIBLE
+        printf("\n==>Veuillez jouer une carte supérieure ou égale à la dernière du jeu\n");
+        return 2;//pas odre du jeu
+    }else if (last_card <= 2 && carte <= 2){
+        //le joueur veut jouer un as ou un 2 au dessus d'un as ou un 2
+        if (last_card<=carte){
+            carte_ok=1;
+        }else{
+            printf("\n==>Veuillez jouer une carte supérieure ou égale à la dernière du jeu\n");
+            return 2;//pas odre du jeu
+        }
+    }
+
+	//2. poser obligatoirement la meme carte
+	//analyser les 3 dernières cartes
+    if (indiceP>1 && partie[indiceP-1]==last_card){
+        //2 dernière carte pareille = jouer une carte pareille
+        if (carte==last_card){
+            carte_ok=1;
+        }else{
+            printf("\n==>Veuillez poser obligatoirement une carte égale à la dernière carte posée\n");
+            return 3;//il faut jouer une carte pareil ou passer son tour
+        }
+    }
+
+
+	//jouer la carte
+	if(flag==1 && carte_ok==1){
 		//ajout la carte dans la partie (recupérer indice de jeu)
-		int indiceP;
-		indiceP=indice_partie(partie);
 		if (indiceP >= TAILLE_JEU_DE_CARTE){
-			return 0;
+            printf("\n==>La carte saisie n'existe pas dans votre jeu\n");
+            return 0;
 		}
 		partie[indiceP]=carte;
 		//mettre la carte à 0 dans le tab du jeu de carte
 		jeu_de_carte[indice]=0;
 		return 1;
 	}
-	return 0;
+    printf("\n==>La carte saisie n'existe pas dans votre jeu\n");
+    return 0;
 
 }
+
+
+int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int i=0;
+
+    while (jeu_de_carte[i]!=0){
+        i++;
+    }
+        return jeu_de_carte[i-1];
+
+
+}
+
+void remplir_tab_joueurs(int joueurs[2][NB_JOUEURS]){
+    for (int i = 0; i < NB_JOUEURS; i++) {
+        joueurs[1][i]=i+1;
+        joueurs[2][i]=1;//actif par défaut
+    }
+}
+
+void afficher_tab_joueurs(int joueurs[2][NB_JOUEURS]){
+    printf("\nJOUEURS :\n");
+    for (int i = 0; i < NB_JOUEURS; i++){
+            printf("ordre : %d | NumJ : %d | Actif : %d \n",i,joueurs[1][i],joueurs[2][i]);
+        }
+}
+
+//TODO : gérer les série : quand un "2" est posé, quand carré ou quand tout le monde est couché => dernièrec arte posé commence
+//TODO : gérer les joueurs qui se couche (tableau de joueur avec 0 ou 1 en fonction de si ils sont actfis ou ont passé leurs tours)
