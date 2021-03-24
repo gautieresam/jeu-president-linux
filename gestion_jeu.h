@@ -31,3 +31,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 //gestion joueurs
 void afficher_tab_joueurs(int joueurs[2][NB_JOUEURS]);
 void remplir_tab_joueurs(int joueurs[2][NB_JOUEURS]);
+void set_joueur_inactif(int numJoueur,int joueurs[2][NB_JOUEURS]);
+int get_status_joueurs(int numJoueur,int joueurs[2][NB_JOUEURS]);
+void set_all_joueurs_actifs(int joueurs[2][NB_JOUEURS]);
+int combien_joueurs_actifs(int joueurs[2][NB_JOUEURS]);

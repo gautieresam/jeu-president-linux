@@ -207,8 +207,6 @@ int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
         i++;
     }
         return jeu_de_carte[i-1];
-
-
 }
 
 void remplir_tab_joueurs(int joueurs[2][NB_JOUEURS]){
@@ -225,5 +223,37 @@ void afficher_tab_joueurs(int joueurs[2][NB_JOUEURS]){
         }
 }
 
+void set_joueur_inactif(int numJoueur,int joueurs[2][NB_JOUEURS]){
+   int i=0;
+    while (joueurs[1][i]!=numJoueur){
+        i++;
+    }
+    joueurs[2][i]=0;
+}
+
+//actif ou "couché"
+int get_status_joueurs(int numJoueur,int joueurs[2][NB_JOUEURS]){
+    int i=0;
+    while (joueurs[1][i]!=numJoueur){
+        i++;
+    }
+    return joueurs[2][i];
+}
+
+void set_all_joueurs_actifs(int joueurs[2][NB_JOUEURS]){
+    for (int i = 0; i < NB_JOUEURS; i++) {
+        joueurs[2][i]=1;//actif par défaut
+    }
+}
+
+int combien_joueurs_actifs(int joueurs[2][NB_JOUEURS]){
+    int count=0;
+    for (int i = 0; i < NB_JOUEURS; i++) {
+        if (joueurs[2][i]==1){
+            count++;
+        }
+    }
+    return count;
+}
+
 //TODO : gérer les série : quand un "2" est posé, quand carré ou quand tout le monde est couché => dernièrec arte posé commence
-//TODO : gérer les joueurs qui se couche (tableau de joueur avec 0 ou 1 en fonction de si ils sont actfis ou ont passé leurs tours)

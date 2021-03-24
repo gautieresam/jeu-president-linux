@@ -26,8 +26,22 @@ int main(){
 
  	remplir_tab_joueurs(joueurs);
  	afficher_tab_joueurs(joueurs);
- 	
- 	//TEST des mutex pour partages ressources inter-processus
+
+    printf("set j1 et 2 inactif");
+    set_joueur_inactif(1,joueurs);
+    set_joueur_inactif(2,joueurs);
+    afficher_tab_joueurs(joueurs);
+    printf("nb J actifs : %d\n"
+           "",combien_joueurs_actifs(joueurs));
+
+    printf("set all jouers actifs :");
+    set_all_joueurs_actifs(joueurs);
+    afficher_tab_joueurs(joueurs);
+    printf("nb J actifs : %d\n",combien_joueurs_actifs(joueurs));
+
+
+
+    //TEST des mutex pour partages ressources inter-processus
  	pthread_t j1, j2;
  	//void * ret;
  	pthread_create(&j1, NULL, joueur, (int *) 1);
@@ -52,7 +66,7 @@ void *joueur(void *arg){
 	pthread_mutex_lock(&my_mutex);
 		afficher_carte_joueur(numJ,jeu_de_carte);
 	pthread_mutex_unlock(&my_mutex);
-	
+
 	//test jouer une carte : mettre dans un mutex quand utilisation de la ressource
 	int carte;
         printf("Veuillez saisir une carte : ");
@@ -72,6 +86,8 @@ void *joueur(void *arg){
         //la dernière carte jouée
         printf("\nDernière carte jouée : %d\n", get_derniere_carte(partie));
         pthread_mutex_unlock(&my_mutex);
+
+
     }
 
 	
