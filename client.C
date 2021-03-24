@@ -1,17 +1,9 @@
-/**
- * Ce programme vise a illustrer le fonctionnement des segments de memoire
- * partagee IPC System V. Ce programme ouvre un segment de memoire partagee qui
- * est cree par 'memoireServeur' et y lit les 10 entiers presents.
- * @author Cyril Rabat
- * @version 23/02/2016
- **/
-#define _XOPEN_SOURCE
 
+#define _XOPEN_SOURCE
 #include <stdio.h>      /* Pour printf, perror */
 #include <stdlib.h>     /* Pour exit, EXIT_SUCCESS, EXIT_FAILURE */
 #include <sys/shm.h>    /* Pour shmget, shmat, shmdt */
 #include <errno.h>      /* Pour errno */
-
 
 #ifndef _STRUCTURES_
 #define _STRUCTURES_

@@ -1,10 +1,12 @@
 /**
- * Ce programme vise a illustrer le fonctionnement des segments de memoire
- * partagee IPC System V. Ce programme cree un segment de memoire partagee et
- * y place 10 entiers.
- * @author Cyril Rabat
- * @version 14/03/2016
+
+ * HOW TO COMPILE SERVER/CLIENT ?
+ * gcc server.c -o server -lpthread
+ * RUN with ./server and ./cleint
+ *
  **/
+
+
 #define _XOPEN_SOURCE
 
 #include <stdio.h>      /* Pour printf, perror */
@@ -54,6 +56,28 @@ int main() {
         perror("Erreur lors du detachement ");
         exit(EXIT_FAILURE);
     }
+
+
+
+
+    /* Suppression du segment de memoire partagee */
+    /* Demander à l'utilisateur */
+    /*
+    printf("Taper sur 0 pour supprimer le segment de memoire ! ");
+    int deleteMemoryShared=-1;
+    scanf("%d", &deleteMemoryShared);
+    if(deleteMemoryShared == 0){
+        if(shmctl(shmid, IPC_RMID, 0) == -1) {
+            perror("Erreur lors de la suppression du segment de memoire partagee ");
+            exit(EXIT_FAILURE);
+        }
+    }
+    printf("Segment de memoire partagee supprime.\n");
+*/
+
+
+
+
 
     return EXIT_SUCCESS;
 }
