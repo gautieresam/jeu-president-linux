@@ -113,9 +113,44 @@ void choix_repartition_des_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 
    int choix=0;
    NB_JOUEURS % 2 == 0 ? distribution_paire(jeu_de_carte) : distribution_impaire(jeu_de_carte);
+
 }
 
+/**
+ * \fn melanger_cartes(jeu_de_carte)
+ * \brief Fonction qui va mélanger le jeu de carte (tableau)
+ * \
+ * \param tab le tableau à melanger.
+ * \return pas de return
+*/
+void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int temp, alea;
+    //mélanger le jeu
+    for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
+      //echanger la case d'indice i avec une case random du tableau
+      temp=jeu_de_carte[i];
+      alea=rand() % (TAILLE_JEU_DE_CARTE);
+      jeu_de_carte[i]=jeu_de_carte[alea];
+      jeu_de_carte[alea]=temp;
+   }
+}
 
+int give_taille_de_la_main(){
+    int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
+    return taille;
+}
+
+void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int taille_main = give_taille_de_la_main();
+    int debut=taille_main*numJoueur;
+    int fin=debut+taille_main;
+
+    printf("\nJeu du joueur %d : ",numJoueur);
+    for (int i = debut; i < fin; i++){
+        printf("%d - ",jeu_de_carte[i]);
+    }
+
+}
 
 
 // Main 
@@ -129,10 +164,17 @@ int main(int argc, char const *argv[])
 
    //afficher_le_jeu_de_carte(jeu_de_carte);
    Initalisation_du_jeu_de_carte(jeu_de_carte);
+    //afficher_le_jeu_de_carte(jeu_de_carte);
+  // choix_repartition_des_cartes(jeu_de_carte);
+   melanger_cartes(jeu_de_carte);
    afficher_le_jeu_de_carte(jeu_de_carte);
-   choix_repartition_des_cartes(jeu_de_carte);
 
+   int taille_main = give_taille_de_la_main();
+  printf("Taille de la main : %d\n",taille_main);
 
+ //num joueur = de 0 à x
+ afficher_carte_joueur(0,jeu_de_carte);
+ afficher_carte_joueur(1,jeu_de_carte);
 
    // Creation ID partie 
    
@@ -140,8 +182,8 @@ int main(int argc, char const *argv[])
 
    // Creéation des joueurs : 
    // To do : faire une fonction pour la creation des joueurs. 
-   joueur_1 = fork();
-   joueur_2 = fork();
+   //joueur_1 = fork();
+   //joueur_2 = fork();
 
 
 
