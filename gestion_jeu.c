@@ -208,7 +208,7 @@ int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
         return jeu_de_carte[i-1];
 }
 
-void remplir_tab_joueurs(int joueurs[2][NB_JOUEURS]){
+void remplir_tab_joueurs(int joueurs[][NB_JOUEURS]){
     for (int i = 0; i < NB_JOUEURS; i++) {
         joueurs[1][i]=i+1;
         joueurs[2][i]=1;//actif par défaut

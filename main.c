@@ -27,7 +27,7 @@ struct data_t{
 
     int jeu_de_carte[(TAILLE_JEU_DE_CARTE)];
     int partie[(TAILLE_JEU_DE_CARTE)];
-    int joueurs[2][NB_JOUEURS];
+    int joueurs[3][NB_JOUEURS];
     int start;
     int nbCurrentUser;
 
@@ -61,30 +61,24 @@ int main(){
 	printf("Taille de la main : %d\n",taille_main);
 	
 	afficher_carte_joueur(0,data.jeu_de_carte);
-
 	afficher_carte_joueur(1,data.jeu_de_carte);
-
 	afficher_carte_joueur(2,data.jeu_de_carte);
-
 	afficher_carte_joueur(3,data.jeu_de_carte);
 
 
  	remplir_tab_joueurs(data.joueurs);
-
- 	//afficher_tab_joueurs(data.joueurs);
-
+ 	afficher_tab_joueurs(data.joueurs);
 
 
 
-/*
     //TEST des mutex pour partages ressources inter-processus
- 	pthread_t j1, j2;
- 	//void * ret;
- 	pthread_create(&j1, NULL, joueur, (int *) 1);
- 	//pthread_create(&j2, NULL, joueur, (int *) 2);
+ 	pthread_t j1, j2,maitre;
+
+
+    pthread_create(&j1, NULL, maitre, (int *) 1);
+    //pthread_create(&j1, NULL, joueur, (int *) 1);
 
  	pthread_join(j1, NULL);
-    	//pthread_join(j2, NULL);
     sleep(1000);
 
 
@@ -92,9 +86,14 @@ int main(){
     sem_unlink("ISABELLE.SEMAPHORE");
     sem_close(monSemaphore);
 
- */
+
 	return 0;
 }
+
+
+
+
+
 
 //Fonction de jeu du joueur
 void *joueur(void *arg){
