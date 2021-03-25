@@ -1,27 +1,5 @@
-/**
 
- * HOW TO COMPILE SERVER/CLIENT ?
- * gcc server.c -o server -lpthread
- * RUN with ./server and ./cleint
- *
- **/
-
-
-#define _XOPEN_SOURCE
-
-#include <stdio.h>      /* Pour printf, perror */
-#include <stdlib.h>     /* Pour exit, EXIT_SUCCESS, EXIT_FAILURE */
-#include <sys/shm.h>    /* Pour shmget, shmat, shmdt */
-#include <errno.h>      /* Pour errno */
-#include <sys/stat.h>   /* Pour S_IRUSR, S_IWUSR */
-
-#ifndef _STRUCTURES_
-#define _STRUCTURES_
-
-/* Cle utilisee pour le segment de memoire partagee */
-#define CLE 1056
-
-#endif
+#include "server.h"
 
 int main() {
     int shmid, i, *debut;

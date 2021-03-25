@@ -1,4 +1,5 @@
 #include "gestion_jeu.h"
+#include "server.h"
 
 /**
  * \fn pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -15,80 +16,56 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 
 /**
- * \fn Sturure qui contient les informations de la partie.
- * \brief
- *
- * \param tableau jeu_de_carte, contient le jeu de carte mélangé.
- * \param entier start, variable pour les nouveux joueurs si ils peuvent jouer à la partie ou non.
- * \param tableau partie, contient les cartes posés par les joueurs.
- * \param entier nbCurrentUser,variable pour connaitre le nombre de joueur dans la partie.
- */
-struct data_t{
-
-    int jeu_de_carte[(TAILLE_JEU_DE_CARTE)];
-    int partie[(TAILLE_JEU_DE_CARTE)];
-    int joueurs[3][NB_JOUEURS];
-    int start;
-    int nbCurrentUser;
-
-} ;
-
-/**
  * \fn sem_t *monSemaphore;
  * \brief Initialisation du premier semaphore
  */
-sem_t *monSemaphore;
-
+sem_t *semProtectSharedMemory;
 
 int main(){
 
-    // Structure qui va permettre de stocker les informations de notre partie.
-    struct data_t data;
+    struct data_t *data;
 
-    // Initialiser les variables de data
-    data.start=0;
-    data.nbCurrentUser=0;
-    printf("INFO : La partie est-elle demaré [0/1] : %d\n",data.start);
-	initalisation_du_jeu_de_carte(data.jeu_de_carte);
-	afficher_tab(data.jeu_de_carte);
-	melanger_cartes(data.jeu_de_carte);
-	afficher_tab(data.jeu_de_carte);
+    /**
+    * \fn Creation de la memoire partagé qui est une structure data_t
+    * \brief Attention il faut jouer ./clean si la memoire partagé n'a pas été supprimé !
+    * \param la clé utilisé est 1056
+    * **/
+    int shmid, i, *debut;
+    struct data_t *memoryShared;
 
-    monSemaphore=sem_open("/data.SEMAPHORE",O_CREAT | O_RDWR,0600,2); // 2 nb de processus en meme temps
+    if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
+        if(errno == EEXIST)
+            fprintf(stderr, "Le segment de memoire partagee (cle=%d) existe deja\n", CLE);
+        else
+            perror("Erreur lors de la creation du segment de memoire ");
+        exit(EXIT_FAILURE);
+    }
+    printf("Serveur : segment cree.\n");
 
+    if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
+        perror("Erreur lors de l'attachement du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
 
-    int taille_main = give_taille_de_la_main();
-	printf("Taille de la main : %d\n",taille_main);
-	
-	afficher_carte_joueur(0,data.jeu_de_carte);
-	afficher_carte_joueur(1,data.jeu_de_carte);
-	afficher_carte_joueur(2,data.jeu_de_carte);
-	afficher_carte_joueur(3,data.jeu_de_carte);
+    printf("%d",memoryShared->start);
 
+    initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte);
+    afficher_tab(memoryShared->jeu_de_carte);
+    melanger_cartes(memoryShared->jeu_de_carte);
+    afficher_tab(memoryShared->jeu_de_carte);
+    afficher_carte_joueur(0,memoryShared->jeu_de_carte);
+    afficher_carte_joueur(1,memoryShared->jeu_de_carte);
+    afficher_carte_joueur(2,memoryShared->jeu_de_carte);
+    afficher_carte_joueur(3,memoryShared->jeu_de_carte);
 
- 	remplir_tab_joueurs(data.joueurs);
- 	afficher_tab_joueurs(data.joueurs);
-
-
-
-    //TEST des mutex pour partages ressources inter-processus
- 	pthread_t j1, j2,maitre;
-
-
-    pthread_create(&j1, NULL, maitre, (int *) 1);
-    //pthread_create(&j1, NULL, joueur, (int *) 1);
-
- 	pthread_join(j1, NULL);
-    sleep(1000);
-
-
-    // Destruction du semaphore
-    sem_unlink("ISABELLE.SEMAPHORE");
-    sem_close(monSemaphore);
+    remplir_tab_joueurs(memoryShared->joueurs);
+    afficher_tab_joueurs(memoryShared->joueurs);
 
 
 	return 0;
 }
+
+
 
 
 

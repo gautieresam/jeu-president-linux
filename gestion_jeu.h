@@ -13,6 +13,26 @@
 #define TAILLE_JEU_DE_CARTE 52 // 32 ou 52
 #define NB_JOUEURS 4
 
+/**
+ * \fn Sturure qui contient les informations de la partie.
+ * \brief
+ *
+ * \param tableau jeu_de_carte, contient le jeu de carte mélangé.
+ * \param entier start, variable 0 ou 1  pour les nouveux joueurs si ils peuvent jouer à la partie ou non.
+ * \param tableau partie, contient les cartes posés par les joueurs.
+ * \param entier nbCurrentUser,variable pour connaitre le nombre de joueur dans la partie.
+ * \param entier aQuiDeJouer,variable 1,2,3,4 pour connaitre le joueur qui doit jouer.
+*/
+struct data_t{
+
+    int jeu_de_carte[(TAILLE_JEU_DE_CARTE)];
+    int partie[(TAILLE_JEU_DE_CARTE)];
+    int joueurs[3][NB_JOUEURS];
+    int start;
+    int nbCurrentUser;
+    int aQuiDeJouer;
+} ;
+
 
 void *joueur(void *arg);
 
