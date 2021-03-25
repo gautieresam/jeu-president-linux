@@ -7,5 +7,10 @@
 
 /* Cle utilisee pour le segment de memoire partagee */
 #define CLE 1056
-
 #endif
+
+
+
+void *functionThreadMaitre(void *arg);
+
+void *functionThreadPartie(void *arg);

@@ -16,21 +16,31 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 
 /**
- * \fn sem_t *monSemaphore;
- * \brief Initialisation du premier semaphore
+ * \fn sem_t *semProtectSharedMemory;
+ * \brief Declaration du semaphore pour l'espace de memoire partagée
  */
 sem_t *semProtectSharedMemory;
 
-int main(){
 
-    struct data_t *data;
+/**
+ * \fn pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
+ * \brief Declaration d'un mutex pour proteger les ressources
+ */
+pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+
+
+
+
+int main(){
 
     /**
     * \fn Creation de la memoire partagé qui est une structure data_t
     * \brief Attention il faut jouer ./clean si la memoire partagé n'a pas été supprimé !
     * \param la clé utilisé est 1056
     * **/
-    int shmid, i, *debut;
+    int shmid;
     struct data_t *memoryShared;
 
     if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
@@ -48,8 +58,11 @@ int main(){
     }
 
     // EXEMPLE POUR MARIETTE
-
     printf("%d",memoryShared->start);
+
+    // Mise en place d'un semaphore
+    semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
+    sem_wait(semProtectSharedMemory); // Débit zone critique
 
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte);
     afficher_tab(memoryShared->jeu_de_carte);
@@ -59,18 +72,88 @@ int main(){
     afficher_carte_joueur(1,memoryShared->jeu_de_carte);
     afficher_carte_joueur(2,memoryShared->jeu_de_carte);
     afficher_carte_joueur(3,memoryShared->jeu_de_carte);
-
     remplir_tab_joueurs(memoryShared->joueurs);
     afficher_tab_joueurs(memoryShared->joueurs);
 
+    sem_post(semProtectSharedMemory);// Fin de zone critique
 
-	return 0;
+
+    /**
+     * \fn Creation d'un thread conditionnel partie
+     * \brief Ce thread est déclenché lorsque 4 joueurs sont connectés à une partie
+     * \param La condition utilisé est cond
+    * **/
+    pthread_t threadPartie;
+    pthread_create(&threadPartie, NULL,functionThreadPartie, NULL);
+
+
+
+    /**
+     * \fn Creation d'un thread maitre, il s'agit du premier thread du serveur
+     * \brief Ce thread est va declencher une condition cond si il detecte 4 joueurs qui sont connectés à une partie
+     * \param La condition utilisé est cond
+    * **/
+    void *ret;
+    pthread_t threadMaitre;
+    pthread_create(&threadMaitre, NULL,functionThreadMaitre, NULL);
+    pthread_join(threadMaitre, &ret);
+
+
+
+    return 0;
+}
+
+
+void *functionThreadPartie(void *arg) {
+
+    pthread_cond_wait(&cond,&unMutex);
+    printf("Il y a eu un declenchement de la partie ;\n");
+
+
+
 }
 
 
 
+void *functionThreadMaitre(void *arg){
 
+    int shmid;
+    struct data_t *memoryShared;
 
+    printf("THREAD Maitre \n");
+    if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
+        perror("Erreur lors de la recuperation du segment de memoire partagee\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("Client : recuperation du segment de memoire.\n");
+
+    int flag = -1 ;
+    while (flag == -1 ){
+
+        if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
+            perror("Erreur lors de l'attachement du segment de memoire partagee ");
+            exit(EXIT_FAILURE);
+        }
+
+        if( memoryShared->nbCurrentUser == NB_JOUEURS){
+            flag=0;
+            memoryShared->start=1;
+            pthread_cond_signal(&cond);
+
+        }else{
+            printf("En attente des joueurs\n");
+        }
+
+        if(shmdt(memoryShared) == -1) {
+            perror("Erreur lors du detachement du segment de memoire partagee ");
+            exit(EXIT_FAILURE);
+        }
+
+        sleep(3);
+    }
+
+    pthread_exit(0);
+}
 
 
 

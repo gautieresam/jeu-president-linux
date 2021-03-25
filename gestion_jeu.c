@@ -63,6 +63,12 @@ void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
    }
 }
 
+void test(){
+    printf("function");
+}
+
+
+
 int give_taille_de_la_main(){
     int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
     return taille;
