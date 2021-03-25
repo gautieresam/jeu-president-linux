@@ -47,6 +47,8 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
+    // EXEMPLE POUR MARIETTE
+
     printf("%d",memoryShared->start);
 
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte);
