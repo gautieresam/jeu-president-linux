@@ -7,9 +7,10 @@
 #include <time.h>
 #include <semaphore.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #define TAILLE_JEU_DE_CARTE 52 // 32 ou 52
-#define NB_JOUEURS 4
+#define NB_JOUEURS 2
 
 /**
  * \fn Sturure qui contient les informations de la partie.
@@ -29,6 +30,7 @@ struct data_t{
     int start;
     int nbCurrentUser;
     int aQuiDeJouer;
+    int idProcessus[4];
 } ;
 
 

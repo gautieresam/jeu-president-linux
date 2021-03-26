@@ -11,7 +11,7 @@
 #include <errno.h>
 
 #define TAILLE_JEU_DE_CARTE 52 // 32 ou 52
-#define NB_JOUEURS 4
+#define NB_JOUEURS 2
 #ifndef _STRUCTURES_
 #define _STRUCTURES_
 #define CLE 1056
@@ -24,6 +24,7 @@ struct data_t{
     int start;
     int nbCurrentUser;
     int aQuiDeJouer;
+    int idProcessus[4];
 } ;
 
 /** Protoype des fonctions pour les clients */

@@ -29,10 +29,6 @@ sem_t *semProtectSharedMemory;
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-
-
-
-
 int main(){
 
     /**
@@ -57,12 +53,12 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    // EXEMPLE POUR MARIETTE
+    // EXEMPLE POUR MARIETTE POUR ACCEDER AUX INFORMATIONS, NOTATION POINTEE
     printf("%d",memoryShared->start);
 
     // Mise en place d'un semaphore
     semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
-    sem_wait(semProtectSharedMemory); // Débit zone critique
+    //sem_wait(semProtectSharedMemory); // Débit zone critique
 
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte);
     afficher_tab(memoryShared->jeu_de_carte);
@@ -70,13 +66,11 @@ int main(){
     afficher_tab(memoryShared->jeu_de_carte);
     afficher_carte_joueur(0,memoryShared->jeu_de_carte);
     afficher_carte_joueur(1,memoryShared->jeu_de_carte);
-    afficher_carte_joueur(2,memoryShared->jeu_de_carte);
-    afficher_carte_joueur(3,memoryShared->jeu_de_carte);
     remplir_tab_joueurs(memoryShared->joueurs);
     afficher_tab_joueurs(memoryShared->joueurs);
 
-    sem_post(semProtectSharedMemory);// Fin de zone critique
 
+    //sem_post(semProtectSharedMemory);// Fin de zone critique
 
     /**
      * \fn Creation d'un thread conditionnel partie
@@ -90,7 +84,7 @@ int main(){
 
     /**
      * \fn Creation d'un thread maitre, il s'agit du premier thread du serveur
-     * \brief Ce thread est va declencher une condition cond si il detecte 4 joueurs qui sont connectés à une partie
+     * \brief Ce thread va declencher une condition cond si il detecte 4 joueurs qui sont connectés à une partie
      * \param La condition utilisé est cond
     * **/
     void *ret;
@@ -104,17 +98,33 @@ int main(){
 }
 
 
+
+/**
+ * \fn void *functionThreadPartie(void *arg) {
+ * \brief Cette fonction est déclenché par un thread conditionnel.
+ * Ce thread permet la communication avec les clients.
+ * \param void *arg les paramatres du thread
+* **/
 void *functionThreadPartie(void *arg) {
 
     pthread_cond_wait(&cond,&unMutex);
     printf("Il y a eu un declenchement de la partie ;\n");
 
 
+    // Creation d'un tibe nommé pour communiquer avec un client dans un sens.
+    mkfifo("serverToJ1", 0666);
+
+
+
 
 }
 
 
-
+/**
+ * \fn vvoid *functionThreadMaitre(void *arg){
+ * \brief Cette fonction est déclenché par le premier thread du programme. Il permet d'attendre que 4 personnes se connectent à la partie.
+ * \param void *arg les paramatres du thread
+* **/
 void *functionThreadMaitre(void *arg){
 
     int shmid;
@@ -148,7 +158,6 @@ void *functionThreadMaitre(void *arg){
             perror("Erreur lors du detachement du segment de memoire partagee ");
             exit(EXIT_FAILURE);
         }
-
         sleep(3);
     }
 
