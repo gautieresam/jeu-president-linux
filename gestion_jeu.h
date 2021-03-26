@@ -14,6 +14,13 @@
 #define NB_JOUEURS 2
 
 
+
+#ifndef _STRUCTURES_
+#define _STRUCTURES_
+
+/* Cle utilisee pour le segment de memoire partagee */
+#define CLE 1056
+#endif
 /* Cle utilisee pour le segment de memoire partagee */
 #define CLE 1056
 
