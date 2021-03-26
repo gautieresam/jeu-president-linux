@@ -7,7 +7,6 @@ int main(){
     * \ Attention il faut jouer ./clean si la memoire partagé n'a pas été supprimé !
     * \param la clé utilisé est 1056
     * **/
-    int shmid;
     struct data_t *memoryShared;
 
     createSharedMemory(1056);
@@ -65,7 +64,7 @@ int main(){
  * Ce thread permet la communication avec les clients.
  * \param void *arg les paramatres du thread
 * **/
-void *functionThreadPartie(void *arg) {
+void *functionThreadPartie() {
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
 
@@ -83,8 +82,9 @@ void *functionThreadPartie(void *arg) {
     }
 
     detachSharedMemory(memoryShared);
-    deleteSharedMemory(1056);
     unlink("serverToJ1"); // Suppression du tube nommé serverToJ1
+
+    pthread_exit(0);
 }
 
 
@@ -93,7 +93,7 @@ void *functionThreadPartie(void *arg) {
  * \brief Cette fonction est déclenché par le premier thread du programme. Il permet d'attendre que 4 personnes se connectent à la partie.
  * \param void *arg les paramatres du thread
 * **/
-void *functionThreadMaitre(void *arg){
+void *functionThreadMaitre(){
     int flag = -1, timeout = 0 ;
     struct data_t *memoryShared;
     printf("INFO : recuperation du segment de memoire.\n");
@@ -111,51 +111,4 @@ void *functionThreadMaitre(void *arg){
         sleep(3);
     }
     pthread_exit(0);
-}
-
-
-
-//Fonction de jeu du joueur
-void *joueur(void *arg){
-
-    printf("test");
-    /*
-
-
-	int numJ = (int) arg;
-
-    for (int i=0; i<10;i++){
-
-        printf("\n\nJe suis le joueur num %d\n",numJ);
-	printf("Voici mon jeu : ");
-	//mise d'un mutex car utilisation d'une ressource exclusive (le jeu de carte)
-	pthread_mutex_lock(&my_mutex);
-		afficher_carte_joueur(numJ,jeu_de_carte);
-	pthread_mutex_unlock(&my_mutex);
-
-	//test jouer une carte : mettre dans un mutex quand utilisation de la ressource
-	int carte;
-        printf("Veuillez saisir une carte : ");
-        scanf("%d", &carte);
-        printf("\nessai de jouer la carte %d\n", carte);
-        pthread_mutex_lock(&my_mutex);
-        //jouer une carte
-        int test = jouer_une_carte(numJ, carte, jeu_de_carte, partie);
-        printf("resultat (1 si la carte a été joué ou passe son tour, sinon redemander la carte= %d", test);
-        pthread_mutex_unlock(&my_mutex);
-
-        pthread_mutex_lock(&my_mutex);
-        //afficher le jeu du joueur
-        afficher_carte_joueur(numJ, jeu_de_carte);
-        //afficher le tableau de la partie
-        afficher_tab(partie);
-        //la dernière carte jouée
-        printf("\nDernière carte jouée : %d\n", get_derniere_carte(partie));
-        pthread_mutex_unlock(&my_mutex);
-    }
-
-
-	pthread_exit(0);
-
-     */
 }

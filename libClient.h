@@ -27,4 +27,7 @@ struct data_t{
     int idProcessus[4];
 } ;
 
-/** Protoype des fonctions pour les clients */
+void *getSharedMemory(int cle);
+void *detachSharedMemory(struct data_t *memoryShared);
+void *deleteSharedMemory(int cle);
+void *createSharedMemory(int cle);

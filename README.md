@@ -2,10 +2,11 @@
 
 
 
+
+# Architecture 
+
+
 # Fonctionnement de la relation client serveur 
-
-#
-
 
 1. Le serveur créer une memoire partagée pour les clients
 

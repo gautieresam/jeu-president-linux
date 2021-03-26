@@ -1,6 +1,5 @@
 #include "gestion_jeu.h"
 
-
 /***************************************************************************************
  * Partie Serveur Gautier
  ***************************************************************************************/
@@ -10,7 +9,7 @@
  * \brief Cette fonction permet de crééer une memoire partagée.
  * \param int *cle qui est la clé de mon espace de memoire partagée
 * **/
-void * createSharedMemory(int cle){
+void createSharedMemory(int cle){
 
     int shmid;
 
@@ -30,7 +29,7 @@ void * createSharedMemory(int cle){
  * \brief Cette fonction est déclenché par un thread conditionnel.
  * \param int *cle qui est la clé de mon espace de memoire partagée
 * **/
-void * getSharedMemory(int *cle){
+void * getSharedMemory(int cle){
 
     int shmid;
     struct data_t *memoryShared;
@@ -51,7 +50,7 @@ void * getSharedMemory(int *cle){
  * \brief Cette fonction est permet de detacher une memoire partagée.
  * \param struct data_t *memoryShared la structure à détacher
 * **/
-void * detachSharedMemory(struct data_t *memoryShared){
+void detachSharedMemory(struct data_t *memoryShared){
     if(shmdt(memoryShared) == -1) {
         perror("Erreur lors du detachement du segment de memoire partagee ");
         exit(EXIT_FAILURE);
@@ -63,7 +62,7 @@ void * detachSharedMemory(struct data_t *memoryShared){
  * \brief Cette fonction permet de supprimer une memoire partagée.
  * \param int *cle la clé de la memoire partagée
 * **/
-void *deleteSharedMemory(int *cle){
+void deleteSharedMemory(int cle){
     int shmid;
     /* Recuperation du segment de memoire partagee */
     if((shmid = shmget((key_t)cle, 0, 0)) == -1) {
@@ -150,9 +149,6 @@ void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
    }
 }
 
-void test(){
-    printf("function");
-}
 
 
 
@@ -347,13 +343,3 @@ int combien_joueurs_actifs(int joueurs[2][NB_JOUEURS]){
     }
     return count;
 }
-
-
-
-
-
-
-
-
-
-//TODO : gérer les série : quand un "2" est posé, quand carré ou quand tout le monde est couché => dernièrec arte posé commence

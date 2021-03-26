@@ -37,13 +37,10 @@ pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 int main() {
 
     void *ret;
-
-
     /**
      * Identifier le processus du client
      * **/
     printf("Processus client : %d \n",getpid());
-
 
     /**
     * \fn Creation d'un thread conditionnel partie
@@ -52,7 +49,6 @@ int main() {
     * **/
     pthread_t threadPartie;
     pthread_create(&threadPartie, NULL,functionThreadPartie, NULL);
-
 
     /**
     * \fn Creation d'un thread client, il s'agit du premier thread du client
@@ -63,12 +59,8 @@ int main() {
     pthread_create(&threadClient, NULL,functionThreadClient, NULL);
     pthread_join(threadClient, &ret);
 
-
     return EXIT_SUCCESS;
 }
-
-
-
 
 
 /**
@@ -83,11 +75,9 @@ void *functionThreadPartie(void *arg){
 
 
     // Faire une boucle qui va regarder si il y a un pipe nommé avec les instructions
+    pthread_exit(0);
 
 }
-
-
-
 
 
 /**
@@ -149,8 +139,6 @@ void *functionThreadClient(void *arg){
 
     pthread_exit(0);
 }
-
-
 
 
 

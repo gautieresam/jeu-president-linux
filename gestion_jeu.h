@@ -1,4 +1,3 @@
-#define _XOPEN_SOURCE
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,11 +25,6 @@
 #define CLE 1056
 #endif
 
-/**
- * \fn pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
- * \brief Initialisation d'un thread mutex.
- */
-pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -74,19 +68,17 @@ struct data_t{
 /**
  * \brief Prototype des fonctions côté serveur
  **/
-void *functionThreadMaitre(void *arg) ;
-void *functionThreadPartie(void *arg) ;
-void *getSharedMemory(int *cle);
-void *detachSharedMemory(struct data_t *memoryShared);
-void *deleteSharedMemory(int *cle);
-void *createSharedMemory(int cle);
+void *functionThreadMaitre() ;
+void *functionThreadPartie() ;
+void *getSharedMemory(int cle);
+void detachSharedMemory(struct data_t *memoryShared);
+void createSharedMemory(int cle);
 
 
 
 /**
  * \brief Prototype des fonctions côté client
  **/
-void *joueur(void *arg);
 void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE]);
 void afficher_tab(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
