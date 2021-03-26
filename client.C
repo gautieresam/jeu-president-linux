@@ -9,11 +9,44 @@ void * functionThreadClient(void *pVoid1);
 void * functionThreadPartie(void *pVoid);
 
 
+/**
+ * \fn void *getSharedMemory(int *entier){
+ * \brief Cette fonction est déclenché par un thread conditionnel.
+ * \param int *cle qui est la clé de mon espace de memoire partagée
+* **/
+void *getSharedMemory(int cle){
+
+    int shmid;
+    struct data_t *memoryShared;
+
+    if((shmid = shmget((key_t)cle, sizeof(struct data_t) * 1, 0)) == -1) {
+        perror("Erreur lors de la recuperation du segment de memoire partagee\n");
+        exit(EXIT_FAILURE);
+    }
+    if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
+        perror("Erreur lors de l'attachement du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
+    return memoryShared;
+}
+
+/**
+ * \fn void * detachSharedMemory(struct data_t *memoryShared)
+ * \brief Cette fonction est permet de detacher une memoire partagée.
+ * \param struct data_t *memoryShared la structure à détacher
+* **/
+void detachSharedMemory(struct data_t *memoryShared){
+    if(shmdt(memoryShared) == -1) {
+        perror("Erreur lors du detachement du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
 /***
  * Declaration des variables globales pour un client
  * */
 int id=-1;
-
 
 /**
  * \fn sem_t *semProtectSharedMemory;
@@ -32,9 +65,38 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
  * \brief Declaration d'un mutex pour proteger les ressources
  */
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
+void MONSIG(int num);
 
+void MONSIG(int num){
+    struct data_t *memoryShared;
+
+    printf("Bienvenu dans MONSIG\n");
+    /* code */
+    switch(num){
+        case SIGUSR1:
+            printf("INFO SIGNAL : reception SIGUSR1\n");
+            memoryShared=getSharedMemory(1056);
+            detachSharedMemory(memoryShared);
+
+
+            break;
+        case SIGUSR2:   printf("INFO SIGNAL : reception SIGUSR2\n");
+            break;
+        case SIGALRM: printf("INFO SIGNAL : reception SIGUSR2\n");
+            break;
+        default:
+            break;
+    }
+}
 
 int main() {
+
+    struct sigaction newact;
+    newact.sa_handler=MONSIG;
+    sigemptyset(&newact.sa_mask);
+    sigaction(SIGUSR1,&newact,NULL);
+    sigaction(SIGALRM,&newact,NULL);
+
 
     void *ret;
     /**
@@ -58,6 +120,7 @@ int main() {
     pthread_t threadClient;
     pthread_create(&threadClient, NULL,functionThreadClient, NULL);
     pthread_join(threadClient, &ret);
+    pthread_join(threadPartie, &ret);
 
     return EXIT_SUCCESS;
 }
@@ -73,6 +136,8 @@ void * functionThreadPartie(void *pVoid){
     pthread_cond_wait(&cond,&unMutex);
     printf("Attente des informations du serveur ;\n");
 
+    alarm(10);
+    pause();
 
     // Faire une boucle qui va regarder si il y a un pipe nommé avec les instructions
     pthread_exit(0);

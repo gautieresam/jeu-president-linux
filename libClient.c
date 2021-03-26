@@ -1,11 +1,6 @@
 
 #include "libClient.h"
 
-
-/***************************************************************************************
- * Partie Serveur Gautier
- ***************************************************************************************/
-
 /**
  * \fn void * createSharedMemory(int *cle){
  * \brief Cette fonction permet de crééer une memoire partagée.
@@ -24,38 +19,9 @@ void createSharedMemory(int cle){
 }
 
 
-/**
- * \fn void *getSharedMemory(int *entier){
- * \brief Cette fonction est déclenché par un thread conditionnel.
- * \param int *cle qui est la clé de mon espace de memoire partagée
-* **/
-void * getSharedMemory(int cle){
 
-    int shmid;
-    struct data_t *memoryShared;
 
-    if((shmid = shmget((key_t)cle, sizeof(struct data_t) * 1, 0)) == -1) {
-        perror("Erreur lors de la recuperation du segment de memoire partagee\n");
-        exit(EXIT_FAILURE);
-    }
-    if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
-        perror("Erreur lors de l'attachement du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
-    return memoryShared;
-}
 
-/**
- * \fn void * detachSharedMemory(struct data_t *memoryShared)
- * \brief Cette fonction est permet de detacher une memoire partagée.
- * \param struct data_t *memoryShared la structure à détacher
-* **/
-void detachSharedMemory(struct data_t *memoryShared){
-    if(shmdt(memoryShared) == -1) {
-        perror("Erreur lors du detachement du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
-}
 
 /**
  * \fn void *deleteSharedMemory(int *cle)
@@ -75,5 +41,6 @@ void deleteSharedMemory(int cle){
         exit(EXIT_FAILURE);
     }
 }
+
 
 

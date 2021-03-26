@@ -18,5 +18,7 @@
 
 2. Le thread functionThreadMaitre va attendre X joueurs pour lancer le thread functionThreadPartie
    
-    1. Le serveur va créer les tubes nommés pour communiquer avec les clients
-    2. Le client va créer l'écouteur pour recevoir les messages.   
+    1. Le serveur va utiliser les signaux pour sinifier au client de jouer 
+    2. Une alerme de 3 secondes va être mise pour que le joueur puisse poser sa carte
+    3. Si il ne répond pas ou ne pause pas de carte son tour passe ! 
+    4. Au bout des 3 secondes il va écrire dans la memoire partagée la carte 

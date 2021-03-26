@@ -11,6 +11,11 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
  */
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+int kill(pid_t pid, int sig);
+
+
+
 int main(){
 
     /**
@@ -74,6 +79,7 @@ int main(){
  * \param void *arg les paramatres du thread
 * **/
 void * functionThreadPartie(void *pVoid) {
+
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
 
@@ -88,6 +94,10 @@ void * functionThreadPartie(void *pVoid) {
 
     for (int i = 1; i <= NB_JOUEURS ; i++) {
         printf("INFO : joueur %d - PID %d \n",i,memoryShared->idProcessus[i]);
+
+        // Envoyer le signal SIGUSR2 au processus
+        kill(memoryShared->idProcessus[i],SIGUSR1);
+
     }
 
     detachSharedMemory(memoryShared);
