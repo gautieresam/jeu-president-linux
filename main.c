@@ -38,6 +38,7 @@ int main(){
     int shmid;
     struct data_t *memoryShared;
 
+    /*
     if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
         if(errno == EEXIST)
             fprintf(stderr, "Le segment de memoire partagee (cle=%d) existe deja\n", CLE);
@@ -51,6 +52,14 @@ int main(){
         perror("Erreur lors de l'attachement du segment de memoire partagee ");
         exit(EXIT_FAILURE);
     }
+     */
+    createSharedMemory(1056);
+
+    memoryShared=getSharedMemory(1056);
+
+    detachSharedMemory(memoryShared);
+
+
 
     // EXEMPLE POUR MARIETTE POUR ACCEDER AUX INFORMATIONS, NOTATION POINTEE
     printf("%d",memoryShared->start);
@@ -79,8 +88,6 @@ int main(){
     pthread_t threadPartie;
     pthread_create(&threadPartie, NULL,functionThreadPartie, NULL);
 
-
-
     /**
      * \fn Creation d'un thread maitre, il s'agit du premier thread du serveur
      * \brief Ce thread va declencher une condition cond si il detecte 4 joueurs qui sont connectés à une partie
@@ -90,8 +97,6 @@ int main(){
     pthread_t threadMaitre;
     pthread_create(&threadMaitre, NULL,functionThreadMaitre, NULL);
     pthread_join(threadMaitre, &ret);
-
-
 
     return 0;
 }
@@ -115,57 +120,20 @@ void *functionThreadPartie(void *arg) {
     if ( mkfifo("serverToJ1", 0666) == -1  ) {
         printf("INFO: echec de la création du tube serverToJ1");
     }
-    // Creation du tube
     //open("serverToJ1", O_WRONLY); // ouverture en écriture seule
 
-
-
-
-    int shmid;
     struct data_t *memoryShared;
-    if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
-        perror("Erreur lors de la recuperation du segment de memoire partagee\n");
-        exit(EXIT_FAILURE);
-    }
-    if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
-        perror("Erreur lors de l'attachement du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
+    memoryShared=getSharedMemory(1056);
 
-
-
-
-    // Afficher la liste des processus
     for (int i = 1; i <= NB_JOUEURS ; i++) {
         printf("INFO : joueur %d - PID %d \n",i,memoryShared->idProcessus[i]);
     }
 
+    detachSharedMemory(memoryShared);
+    deleteSharedMemory(1056);
 
-    if(shmdt(memoryShared) == -1) {
-        perror("Erreur lors du detachement du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
-
-
-
-
-
-    /**
-     * Free all memoty shared
-     * */
-    /* Recuperation du segment de memoire partagee */
-    if((shmid = shmget((key_t)CLE, 0, 0)) == -1) {
-        perror("Erreur lors de la recuperation du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
-    /* Suppression du segment de memoire partagee */
-    if(shmctl(shmid, IPC_RMID, 0) == -1) {
-        perror("Erreur lors de la suppression du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
-
-
-
+    /* Suppression du tubes nommés*/
+    unlink("serverToJ1");
 
 }
 
@@ -179,37 +147,22 @@ void *functionThreadMaitre(void *arg){
 
     int shmid;
     struct data_t *memoryShared;
-
-    if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
-        perror("Erreur lors de la recuperation du segment de memoire partagee\n");
-        exit(EXIT_FAILURE);
-    }
     printf("INFO : recuperation du segment de memoire.\n");
 
     int flag = -1 ;
     while (flag == -1 ){
 
-        if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
-            perror("Erreur lors de l'attachement du segment de memoire partagee ");
-            exit(EXIT_FAILURE);
-        }
-
+        memoryShared=getSharedMemory(1056);
         if( memoryShared->nbCurrentUser == NB_JOUEURS){
             flag=0;
             memoryShared->start=1;
             pthread_cond_signal(&cond);
-
         }else{
             printf("En attente des joueurs\n");
         }
-
-        if(shmdt(memoryShared) == -1) {
-            perror("Erreur lors du detachement du segment de memoire partagee ");
-            exit(EXIT_FAILURE);
-        }
+        detachSharedMemory(memoryShared);
         sleep(3);
     }
-
     pthread_exit(0);
 }
 
@@ -252,8 +205,6 @@ void *joueur(void *arg){
         //la dernière carte jouée
         printf("\nDernière carte jouée : %d\n", get_derniere_carte(partie));
         pthread_mutex_unlock(&my_mutex);
-
-
     }
 
 
