@@ -2,7 +2,7 @@
 
 
 /***************************************************************************************
- * Partie Client Gautier
+ * Partie Serveur Gautier
  ***************************************************************************************/
 
 /**
@@ -13,7 +13,6 @@
 void * createSharedMemory(int cle){
 
     int shmid;
-    struct data_t ;
 
     if((shmid = shmget((key_t)cle,sizeof(struct data_t) * 1, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
         if(errno == EEXIST)
@@ -24,8 +23,6 @@ void * createSharedMemory(int cle){
     }
     printf("Serveur : segment cree.\n");
 }
-
-
 
 
 /**

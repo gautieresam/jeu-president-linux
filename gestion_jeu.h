@@ -16,18 +16,43 @@
 #define TAILLE_JEU_DE_CARTE 52 // 32 ou 52
 #define NB_JOUEURS 2
 
-
 #ifndef _STRUCTURES_
 #define _STRUCTURES_
 
-/* Cle utilisee pour le segment de memoire partagee */
+/**
+ * \fn #define CLE 1056
+ * \brief Declaration d'une clé pour la memoire partagée de la structure
+ */
 #define CLE 1056
 #endif
 
+/**
+ * \fn pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
+ * \brief Initialisation d'un thread mutex.
+ */
+pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
- * \fn Sturure qui contient les informations de la partie.
- * \brief
+ * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+ * \brief Initialisation d'un thread conditionnel.
+ */
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+/**
+ * \fn sem_t *semProtectSharedMemory;
+ * \brief Declaration du semaphore pour l'espace de memoire partagée
+ */
+sem_t *semProtectSharedMemory;
+
+/**
+ * \fn pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
+ * \brief Declaration d'un mutex pour proteger les ressources
+ */
+pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
+
+/**
+ * \fn struct data_t
+ * \brief sturure qui contient les informations de la partie.
  *
  * \param tableau jeu_de_carte, contient le jeu de carte mélangé.
  * \param entier start, variable 0 ou 1  pour les nouveux joueurs si ils peuvent jouer à la partie ou non.
@@ -46,7 +71,6 @@ struct data_t{
     int idProcessus[4];
 } ;
 
-
 /**
  * \brief Prototype des fonctions côté serveur
  **/
@@ -56,8 +80,6 @@ void *getSharedMemory(int *cle);
 void *detachSharedMemory(struct data_t *memoryShared);
 void *deleteSharedMemory(int *cle);
 void *createSharedMemory(int cle);
-
-
 
 
 

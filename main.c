@@ -1,65 +1,17 @@
 #include "gestion_jeu.h"
 
-/**
- * \fn pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
- * \brief Initialisation d'un thread mutex.
- */
-pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-
-/**
- * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
- * \brief Initialisation d'un thread conditionnel.
- */
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-
-
-/**
- * \fn sem_t *semProtectSharedMemory;
- * \brief Declaration du semaphore pour l'espace de memoire partagée
- */
-sem_t *semProtectSharedMemory;
-
-
-/**
- * \fn pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
- * \brief Declaration d'un mutex pour proteger les ressources
- */
-pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
-
-
 int main(){
 
     /**
-    * \fn Creation de la memoire partagé qui est une structure data_t
-    * \brief Attention il faut jouer ./clean si la memoire partagé n'a pas été supprimé !
+    * \brief Creation de la memoire partagé qui est une structure data_t
+    * \ Attention il faut jouer ./clean si la memoire partagé n'a pas été supprimé !
     * \param la clé utilisé est 1056
     * **/
     int shmid;
     struct data_t *memoryShared;
 
-    /*
-    if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
-        if(errno == EEXIST)
-            fprintf(stderr, "Le segment de memoire partagee (cle=%d) existe deja\n", CLE);
-        else
-            perror("Erreur lors de la creation du segment de memoire ");
-        exit(EXIT_FAILURE);
-    }
-    printf("Serveur : segment cree.\n");
-
-    if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
-        perror("Erreur lors de l'attachement du segment de memoire partagee ");
-        exit(EXIT_FAILURE);
-    }
-     */
     createSharedMemory(1056);
-
     memoryShared=getSharedMemory(1056);
-
-    detachSharedMemory(memoryShared);
-
-
 
     // EXEMPLE POUR MARIETTE POUR ACCEDER AUX INFORMATIONS, NOTATION POINTEE
     printf("%d",memoryShared->start);
@@ -76,7 +28,6 @@ int main(){
     afficher_carte_joueur(1,memoryShared->jeu_de_carte);
     remplir_tab_joueurs(memoryShared->joueurs);
     afficher_tab_joueurs(memoryShared->joueurs);
-
 
     //sem_post(semProtectSharedMemory);// Fin de zone critique
 
@@ -98,6 +49,11 @@ int main(){
     pthread_create(&threadMaitre, NULL,functionThreadMaitre, NULL);
     pthread_join(threadMaitre, &ret);
 
+    /**
+     * Supprimer la memoire partagée
+     * **/
+    detachSharedMemory(memoryShared);
+
     return 0;
 }
 
@@ -110,14 +66,11 @@ int main(){
  * \param void *arg les paramatres du thread
 * **/
 void *functionThreadPartie(void *arg) {
-
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
 
     // Creation d'un tube nommé pour communiquer avec un client dans un sens.
-    // • Retourne 0 en cas de succès, -1 en cas d’échec
-
-    if ( mkfifo("serverToJ1", 0666) == -1  ) {
+    if ( mkfifo("serverToJ1", 0666) == -1  ) { // Retourne 0 en cas de succès, -1 en cas d’échec
         printf("INFO: echec de la création du tube serverToJ1");
     }
     //open("serverToJ1", O_WRONLY); // ouverture en écriture seule
@@ -131,10 +84,7 @@ void *functionThreadPartie(void *arg) {
 
     detachSharedMemory(memoryShared);
     deleteSharedMemory(1056);
-
-    /* Suppression du tubes nommés*/
-    unlink("serverToJ1");
-
+    unlink("serverToJ1"); // Suppression du tube nommé serverToJ1
 }
 
 
@@ -144,14 +94,10 @@ void *functionThreadPartie(void *arg) {
  * \param void *arg les paramatres du thread
 * **/
 void *functionThreadMaitre(void *arg){
-
-    int shmid;
+    int flag = -1, timeout = 0 ;
     struct data_t *memoryShared;
     printf("INFO : recuperation du segment de memoire.\n");
-
-    int flag = -1 ;
-    while (flag == -1 ){
-
+    while (flag == -1 && timeout <= 10 ){
         memoryShared=getSharedMemory(1056);
         if( memoryShared->nbCurrentUser == NB_JOUEURS){
             flag=0;
@@ -161,6 +107,7 @@ void *functionThreadMaitre(void *arg){
             printf("En attente des joueurs\n");
         }
         detachSharedMemory(memoryShared);
+        timeout++;
         sleep(3);
     }
     pthread_exit(0);
