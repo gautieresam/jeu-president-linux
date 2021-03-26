@@ -8,9 +8,16 @@
 #include <semaphore.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #define TAILLE_JEU_DE_CARTE 52 // 32 ou 52
 #define NB_JOUEURS 2
+
+
+/* Cle utilisee pour le segment de memoire partagee */
+#define CLE 1056
+
+
 
 /**
  * \fn Sturure qui contient les informations de la partie.

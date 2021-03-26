@@ -40,6 +40,12 @@ int main() {
 
 
     /**
+     * Identifier le processus du client
+     * **/
+    printf("Processus client : %d \n",getpid());
+
+
+    /**
     * \fn Creation d'un thread conditionnel partie
     * \brief Ce thread est déclenché lorsque j'ai reussi à m'integrer à une partie
     * \param La condition utilisé est cond
@@ -78,8 +84,6 @@ void *functionThreadPartie(void *arg){
 
     // Faire une boucle qui va regarder si il y a un pipe nommé avec les instructions
 
-
-
 }
 
 
@@ -95,17 +99,17 @@ void *functionThreadPartie(void *arg){
  */
 void *functionThreadClient(void *arg){
 
-    int shmid, i, *debut;
+    int shmid;
     struct data_t *memoryShared;
     void *adresse;
 
-    printf("THREAD CLIENT \n");
+    printf("INFO : THREAD CLIENT \n");
     /** Recuperation du segment de memoire partagee **/
     if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
         perror("Erreur lors de la recuperation du segment de memoire partagee ");
         exit(EXIT_FAILURE);
     }
-    printf("Client : recuperation du segment de memoire.\n");
+    printf("INFO : creation du segment de memoire.\n");
 
     /** Attachement du segment de memoire partagee **/
     if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
@@ -113,9 +117,8 @@ void *functionThreadClient(void *arg){
         exit(EXIT_FAILURE);
     }
 
-
-    printf("La partie est-elle commencé 0 => non / 1 => oui : %d\n",memoryShared->start);
-    printf("Le nombre d'utilisateur si je m'ajoute à la partiee : %d\n",(memoryShared->nbCurrentUser+1));
+    printf("INFO : la partie est-elle commencé 0 => non / 1 => oui : %d\n",memoryShared->start);
+    printf("INFO : nombre d'utilisateur si je m'ajoute à la partiee : %d\n",(memoryShared->nbCurrentUser+1));
 
 
     //semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
@@ -123,15 +126,17 @@ void *functionThreadClient(void *arg){
 
     if( memoryShared->start == 0 && (memoryShared->nbCurrentUser+1) <= NB_JOUEURS){
 
-        printf("il y a de la place pour integrer la partie\n");
+        printf("INFO : il y a de la place pour integrer la partie\n");
         memoryShared->nbCurrentUser++;
         id=memoryShared->nbCurrentUser;
-        printf("Mon identifiant est %d\n",id);
+        memoryShared->idProcessus[id]=getpid();
+        printf("INFO : identifiant %d\n",id);
         pthread_cond_signal(&cond);
 
     }else{
+        printf("INFO : pas de place pour integrer la partie, ou alors elle a déjà commencé !");
         exit(3);
-        printf("il n'y a pas de place pour integrer la partie !!!");
+
     }
 
     /** Detachement du segment de memoire partagee **/

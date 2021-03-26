@@ -2,6 +2,22 @@
 
 
 /**
+ * Partie Gautier
+ * */
+
+/** SERVER **/
+void *functionThreadMaitre(void *arg);
+void *functionThreadPartie(void *arg);
+
+
+
+
+
+/**
+ * Partie Mariette
+ * */
+
+/**
  * \fn void Initalisation_du_jeu_de_carte(int tab[52])
  * \brief Fonction d'initailisation du jeu. 1=> as 2=>2 11=>valet 12=>dame 13=>roi
  *
@@ -260,5 +276,13 @@ int combien_joueurs_actifs(int joueurs[2][NB_JOUEURS]){
     }
     return count;
 }
+
+
+
+
+
+
+
+
 
 //TODO : gérer les série : quand un "2" est posé, quand carré ou quand tout le monde est couché => dernièrec arte posé commence

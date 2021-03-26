@@ -1,5 +1,4 @@
 #include "gestion_jeu.h"
-#include "server.h"
 
 /**
  * \fn pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -108,11 +107,62 @@ int main(){
 void *functionThreadPartie(void *arg) {
 
     pthread_cond_wait(&cond,&unMutex);
-    printf("Il y a eu un declenchement de la partie ;\n");
+    printf("INFO : declenchement de la partie\n");
+
+    // Creation d'un tube nommé pour communiquer avec un client dans un sens.
+    // • Retourne 0 en cas de succès, -1 en cas d’échec
+
+    if ( mkfifo("serverToJ1", 0666) == -1  ) {
+        printf("INFO: echec de la création du tube serverToJ1");
+    }
+    // Creation du tube
+    //open("serverToJ1", O_WRONLY); // ouverture en écriture seule
 
 
-    // Creation d'un tibe nommé pour communiquer avec un client dans un sens.
-    mkfifo("serverToJ1", 0666);
+
+
+    int shmid;
+    struct data_t *memoryShared;
+    if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
+        perror("Erreur lors de la recuperation du segment de memoire partagee\n");
+        exit(EXIT_FAILURE);
+    }
+    if((memoryShared = shmat(shmid, NULL, 0)) == (void*)-1) {
+        perror("Erreur lors de l'attachement du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
+
+
+
+
+    // Afficher la liste des processus
+    for (int i = 1; i <= NB_JOUEURS ; i++) {
+        printf("INFO : joueur %d - PID %d \n",i,memoryShared->idProcessus[i]);
+    }
+
+
+    if(shmdt(memoryShared) == -1) {
+        perror("Erreur lors du detachement du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
+
+
+
+
+
+    /**
+     * Free all memoty shared
+     * */
+    /* Recuperation du segment de memoire partagee */
+    if((shmid = shmget((key_t)CLE, 0, 0)) == -1) {
+        perror("Erreur lors de la recuperation du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
+    /* Suppression du segment de memoire partagee */
+    if(shmctl(shmid, IPC_RMID, 0) == -1) {
+        perror("Erreur lors de la suppression du segment de memoire partagee ");
+        exit(EXIT_FAILURE);
+    }
 
 
 
@@ -130,12 +180,11 @@ void *functionThreadMaitre(void *arg){
     int shmid;
     struct data_t *memoryShared;
 
-    printf("THREAD Maitre \n");
     if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
         perror("Erreur lors de la recuperation du segment de memoire partagee\n");
         exit(EXIT_FAILURE);
     }
-    printf("Client : recuperation du segment de memoire.\n");
+    printf("INFO : recuperation du segment de memoire.\n");
 
     int flag = -1 ;
     while (flag == -1 ){
