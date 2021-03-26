@@ -10,9 +10,7 @@
  * \param int *cle qui est la clé de mon espace de memoire partagée
 * **/
 void createSharedMemory(int cle){
-
     int shmid;
-
     if((shmid = shmget((key_t)cle,sizeof(struct data_t) * 1, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
         if(errno == EEXIST)
             fprintf(stderr, "Le segment de memoire partagee (cle=%d) existe deja\n", CLE);

@@ -28,6 +28,5 @@ struct data_t{
 } ;
 
 void *getSharedMemory(int cle);
-void *detachSharedMemory(struct data_t *memoryShared);
-void *deleteSharedMemory(int cle);
-void *createSharedMemory(int cle);
+void detachSharedMemory(struct data_t *memoryShared);
+void createSharedMemory(int cle);

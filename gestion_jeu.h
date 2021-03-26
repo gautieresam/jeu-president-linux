@@ -26,11 +26,6 @@
 #endif
 
 
-/**
- * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
- * \brief Initialisation d'un thread conditionnel.
- */
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 /**
  * \fn sem_t *semProtectSharedMemory;
@@ -38,11 +33,6 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
  */
 sem_t *semProtectSharedMemory;
 
-/**
- * \fn pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
- * \brief Declaration d'un mutex pour proteger les ressources
- */
-pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * \fn struct data_t
@@ -69,7 +59,7 @@ struct data_t{
  * \brief Prototype des fonctions côté serveur
  **/
 void *functionThreadMaitre() ;
-void *functionThreadPartie() ;
+void * functionThreadPartie(void *pVoid) ;
 void *getSharedMemory(int cle);
 void detachSharedMemory(struct data_t *memoryShared);
 void createSharedMemory(int cle);

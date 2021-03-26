@@ -5,8 +5,8 @@
  **/
 void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int give_taille_de_la_main();
-void *functionThreadClient(void *arg);
-void *functionThreadPartie(void *arg);
+void * functionThreadClient(void *pVoid1);
+void * functionThreadPartie(void *pVoid);
 
 
 /***
@@ -69,7 +69,7 @@ int main() {
  * Ce thread permet la communication avec le serveur.
  * \param void *arg les paramatres du thread
 * **/
-void *functionThreadPartie(void *arg){
+void * functionThreadPartie(void *pVoid){
     pthread_cond_wait(&cond,&unMutex);
     printf("Attente des informations du serveur ;\n");
 
@@ -87,11 +87,10 @@ void *functionThreadPartie(void *arg){
  * \param
  * \return
  */
-void *functionThreadClient(void *arg){
+void * functionThreadClient(void *pVoid){
 
     int shmid;
     struct data_t *memoryShared;
-    void *adresse;
 
     printf("INFO : THREAD CLIENT \n");
     /** Recuperation du segment de memoire partagee **/

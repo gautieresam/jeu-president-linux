@@ -1,4 +1,15 @@
 #include "gestion_jeu.h"
+/**
+ * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+ * \brief Initialisation d'un thread conditionnel.
+ */
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+/**
+ * \fn pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
+ * \brief Declaration d'un mutex pour proteger les ressources
+ */
+pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(){
 
@@ -56,15 +67,13 @@ int main(){
     return 0;
 }
 
-
-
 /**
  * \fn void *functionThreadPartie(void *arg) {
  * \brief Cette fonction est déclenché par un thread conditionnel.
  * Ce thread permet la communication avec les clients.
  * \param void *arg les paramatres du thread
 * **/
-void *functionThreadPartie() {
+void * functionThreadPartie(void *pVoid) {
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
 
