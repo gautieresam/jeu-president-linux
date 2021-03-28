@@ -12,9 +12,8 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
+
 int kill(pid_t pid, int sig);
-
-
 
 int main(){
 
@@ -33,9 +32,9 @@ int main(){
 
     // Mise en place d'un semaphore
     semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
-    //sem_wait(semProtectSharedMemory); // Débit zone critique
+    sem_wait(semProtectSharedMemory); // Débit zone critique
 
-    initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte);
+    initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte,memoryShared->partie);
     afficher_tab(memoryShared->jeu_de_carte);
     melanger_cartes(memoryShared->jeu_de_carte);
     afficher_tab(memoryShared->jeu_de_carte);
@@ -44,7 +43,7 @@ int main(){
     remplir_tab_joueurs(memoryShared->joueurs);
     afficher_tab_joueurs(memoryShared->joueurs);
 
-    //sem_post(semProtectSharedMemory);// Fin de zone critique
+    sem_post(semProtectSharedMemory);// Fin de zone critique
 
     /**
      * \fn Creation d'un thread conditionnel partie

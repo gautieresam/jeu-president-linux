@@ -30,3 +30,5 @@ struct data_t{
 void *getSharedMemory(int cle);
 void detachSharedMemory(struct data_t *memoryShared);
 void createSharedMemory(int cle);
+int give_taille_de_la_main();
+int indice_partie(int partie[TAILLE_JEU_DE_CARTE]);

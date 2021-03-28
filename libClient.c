@@ -18,11 +18,6 @@ void createSharedMemory(int cle){
     printf("Serveur : segment cree.\n");
 }
 
-
-
-
-
-
 /**
  * \fn void *deleteSharedMemory(int *cle)
  * \brief Cette fonction permet de supprimer une memoire partagée.
@@ -41,6 +36,23 @@ void deleteSharedMemory(int cle){
         exit(EXIT_FAILURE);
     }
 }
+int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
+    int flag=0, i=0;
+    while(flag==0 && i<(TAILLE_JEU_DE_CARTE-1)){
+        if(partie[i]==0){
+            flag=1;
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
 
 
 
+
+
+int give_taille_de_la_main(){
+    int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
+    return taille;
+}

@@ -1,12 +1,35 @@
 #include "libClient.h"
 
+int carteQueUtilisateurVeutJouer=-1;
+
+
 /**
  * Declaration des prototypes en début du fichier.
  **/
 void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
-int give_taille_de_la_main();
 void * functionThreadClient(void *pVoid1);
 void * functionThreadPartie(void *pVoid);
+int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+
+int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]);
+
+
+/***
+ * Declaration des variables globales pour un client
+ * */
+int id=0;
+
+/**
+ * \fn sem_t *semProtectSharedMemory;
+ * \brief Declaration du semaphore pour l'espace de memoire partagée
+ */
+sem_t *semProtectSharedMemory;
+
+/**
+ * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+ * \brief Initialisation d'un thread conditionnel.
+ */
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 
 /**
@@ -42,23 +65,28 @@ void detachSharedMemory(struct data_t *memoryShared){
     }
 }
 
-
-/***
- * Declaration des variables globales pour un client
- * */
-int id=-1;
-
 /**
- * \fn sem_t *semProtectSharedMemory;
- * \brief Declaration du semaphore pour l'espace de memoire partagée
+ * \fn void afficherLaGame(int tab[52]){
+ * \brief Fonction d'affichage du jeu de carte.
+ *
+ * \param tab le tableau à remplir avec les cartes.
+ * \return pas de return
  */
-sem_t *semProtectSharedMemory;
+void afficherLaGame(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 
-/**
- * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
- * \brief Initialisation d'un thread conditionnel.
- */
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    printf("INFO : afficher la partie\n");
+    for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
+        if (jeu_de_carte[i]==11){
+            printf("Valet - ");
+        } else if (jeu_de_carte[i]== 12){
+            printf("Dame - ");
+        }else if (jeu_de_carte[i]== 13){
+            printf("Roi - ");
+        }else{
+            printf("%d - ",jeu_de_carte[i]);
+        }
+    }
+}
 
 /**
  * \fn pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -68,22 +96,52 @@ pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 void MONSIG(int num);
 
 void MONSIG(int num){
-    struct data_t *memoryShared;
 
-    printf("Bienvenu dans MONSIG\n");
+    struct data_t *memoryShared;
     /* code */
     switch(num){
+
+        /**
+         * \fn reception du signal SIGUSR1
+         * \brief informe que l'utilisateur doit jouer, affiche ses cartes et demande ce qu'il souhaite jouer.
+         * \param ouverture de la memoire partagée
+         * **/
         case SIGUSR1:
-            printf("INFO SIGNAL : reception SIGUSR1\n");
-            memoryShared=getSharedMemory(1056);
+            //printf("INFO SIGNAL : reception SIGUSR1\n");
+            memoryShared=getSharedMemory(1056); // Demande memoire partagée
+            semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1); // Declaration protection
+            sem_wait(semProtectSharedMemory); // Début zone critique
+            afficherLaGame(memoryShared->partie);// Afficher le jeu
+            afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
+            sem_post(semProtectSharedMemory);// Fin de zone critique
             detachSharedMemory(memoryShared);
 
+            printf("USER : entre ta carte :");
+            scanf("%d",&carteQueUtilisateurVeutJouer);
+
+
 
             break;
-        case SIGUSR2:   printf("INFO SIGNAL : reception SIGUSR2\n");
+        case SIGUSR2:
+            printf("INFO SIGNAL : reception SIGUSR2\n");
             break;
-        case SIGALRM: printf("INFO SIGNAL : reception SIGUSR2\n");
+
+        case SIGALRM:
+            printf("INFO SIGNAL : reception alarme\n");
+            printf("INFO : la carte à tester est %d\n",carteQueUtilisateurVeutJouer);
+
+            memoryShared=getSharedMemory(1056); // Demande memoire partagée
+            semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
+            sem_wait(semProtectSharedMemory); // Début zone critique
+
+            jouer_une_carte(id-1,carteQueUtilisateurVeutJouer,memoryShared->jeu_de_carte,memoryShared->partie);
+            detachSharedMemory(memoryShared);
+            sem_post(semProtectSharedMemory);// Fin de zone critique
+
+
+
             break;
+
         default:
             break;
     }
@@ -137,7 +195,13 @@ void * functionThreadPartie(void *pVoid){
     printf("Attente des informations du serveur ;\n");
 
     alarm(10);
-    pause();
+
+    while (1){
+
+        sleep(1);
+    }
+    printf("after pause ");
+
 
     // Faire une boucle qui va regarder si il y a un pipe nommé avec les instructions
     pthread_exit(0);
@@ -213,10 +277,9 @@ void * functionThreadClient(void *pVoid){
  * \param
  * \return
  */
-int give_taille_de_la_main(){
-    int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
-    return taille;
-}
+
+
+
 
 /**
  * \fn
@@ -229,19 +292,169 @@ void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE])
     int taille_main = give_taille_de_la_main();
     int debut=taille_main*numJoueur;
     int fin=debut+taille_main;
-
-    printf("\nJeu du joueur %d : ",numJoueur);
+    printf("\n");
     for (int i = debut; i < fin; i++){
         if (jeu_de_carte[i]==11){
-            printf("Valet - ");
+            printf("Valet(11) | ");
         } else if (jeu_de_carte[i]== 12){
-            printf("Dame - ");
+            printf("Dame(12) | ");
         }else if (jeu_de_carte[i]== 13){
-            printf("Roi - ");
+            printf("Roi(13) | ");
         }else if (jeu_de_carte[i]!=0){
             //n'affiche pas les 0 (car signifie qu'il n'y a pas de carte
-            printf("%d - ",jeu_de_carte[i]);
+            printf("%d | ",jeu_de_carte[i]);
         }
     }
+    printf("Passe son tour(0) ");
+
+    printf("\n");
 }
 
+int give_taille_de_la_main(){
+    int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
+    return taille;
+}
+
+
+
+// Retourne la derneire carte
+int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+
+    int i=0;
+    /**
+     * Gestion du cas ou il s'agit de la premiere carte posée
+     */
+    if(jeu_de_carte[i]==-1){
+        printf("INFO : premiere carte de la partie");
+        i=1;
+    }else{
+        while (jeu_de_carte[i]!=0){
+            i++;
+        }
+    }
+
+    return jeu_de_carte[i-1];
+}
+
+
+int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
+    int flag=0, i=0;
+    while(flag==0 && i<(TAILLE_JEU_DE_CARTE-1)){
+        if(partie[i]==0){
+            flag=1;
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
+
+
+
+int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]){
+
+    int indice=-1,taille_main = give_taille_de_la_main(),debut=taille_main*numJoueur,fin=debut+taille_main,i=debut, flag=0,last_card,carte_ok=0,indiceP=indice_partie(partie);
+
+    printf("INFO : indice de la parie %d\n",indiceP);
+
+    /**
+     * si la carte est égal à 0, le joueur choisit de passer son tour
+     * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
+     **/
+    if (carte==0){
+        printf("INFO : joueur %d passe son tour",numJoueur);
+        return 1;
+    }
+
+    /**
+     * Verifier que la  carte existe bien dans le jeu
+     **/
+    while(flag==0 && i< fin){
+        //printf("INFO : compare %d avec %d\n",jeu_de_carte[i], carte);
+        if(jeu_de_carte[i]==carte){
+            flag=1;
+            indice=i;
+            printf("INFO : la carte joué est dans le jeu du joueur\n");
+        }
+        i++;
+    }
+
+    /**
+     * Si la carte n'est pas dans le jeu, procedure passer son tour
+     * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
+     **/
+    if( flag == 0 ){
+        printf("INFO : la carte à jouer %d est dans le jeu du joueur\n",carte);
+    }
+
+    int p=0;
+    if(jeu_de_carte[p]==-1){
+        printf("INFO : premiere carte de la partie\n");
+        p=1;
+    }else{
+        while (jeu_de_carte[p]!=-1){p++;}}
+    last_card=jeu_de_carte[p-1];
+    /**
+     * Carte=0 => couché , Carte=-1 => 1ere carte, carte=-2 => l'utilisateur a passé son tour
+     **/
+    printf("INFO : la derniere carte %d",last_card);
+
+    if(last_card == 0 || last_card == -1){
+        printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d",carte,last_card);
+        carte_ok=1; // la carte
+    }else if (last_card > 2 && carte > 2){
+        //cas classique, mettre une carte suppérieur ou egale (numériquement parlant)
+        if (carte >= last_card){
+            printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d",carte,last_card);
+            carte_ok=1;
+        } else{
+            printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d",carte,last_card);
+            return 2;//pas odre du jeu
+        }
+    }else if (last_card > 2 && carte <= 2){
+        //le joueur veut jouer un as ou un 2 au dessus d'une carte entre le 3 et le roi OK
+        printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d",carte,last_card);
+        carte_ok=1;
+    }else if (last_card <= 2 && carte > 2){
+        //le joueur veut jouer une carte au dessus d'un as ou un 2 PAS POSSIBLE
+        printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d",carte,last_card);
+        return 2;//pas odre du jeu
+    }else if (last_card <= 2 && carte <= 2){
+        //le joueur veut jouer un as ou un 2 au dessus d'un as ou un 2
+        if (last_card<=carte){
+            printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d",carte,last_card);
+            carte_ok=1;
+        }else{
+            printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d",carte,last_card);
+            return 2;//pas odre du jeu
+        }
+    }
+
+    //2. poser obligatoirement la meme carte
+    //analyser les 3 dernières cartes
+    if (indiceP>1 && partie[indiceP-1]==last_card){
+        //2 dernière carte pareille = jouer une carte pareille
+        if (carte==last_card){
+            carte_ok=1;
+        }else{
+            printf("\n==>Veuillez poser obligatoirement une carte égale à la dernière carte posée\n");
+            return 3;//il faut jouer une carte pareil ou passer son tour
+        }
+    }
+
+    //jouer la carte
+    if(flag==1 && carte_ok==1){
+        //ajout la carte dans la partie (recupérer indice de jeu)
+        if (indiceP >= TAILLE_JEU_DE_CARTE){
+            printf("\n==>La carte saisie n'existe pas dans votre jeu\n");
+            return 0;
+        }
+        partie[indiceP]=carte;
+        //mettre la carte à 0 dans le tab du jeu de carte
+        jeu_de_carte[indice]=0;
+        return 1;
+    }
+    printf("\n==>La carte saisie n'existe pas dans votre jeu\n");
+    return 0;
+
+}

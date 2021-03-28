@@ -69,7 +69,7 @@ void createSharedMemory(int cle);
 /**
  * \brief Prototype des fonctions côté client
  **/
-void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE]);
+void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE],int partie[TAILLE_JEU_DE_CARTE]);
 void afficher_tab(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int give_taille_de_la_main();

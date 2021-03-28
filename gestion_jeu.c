@@ -92,18 +92,22 @@ void deleteSharedMemory(int cle){
  * \param tab le tableau à remplir avec les cartes.
  * \return passage par adresse donc pas de return 
  */
-void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE]){
-   // Declaration des variables 
-   int emplacement=1; 
+void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE],int partie[TAILLE_JEU_DE_CARTE]) {
+    // Declaration des variables
+    int emplacement = 1;
 
-   for (int i = 0; i <TAILLE_JEU_DE_CARTE-3; i=i+4 ){
-      for (int k = 0; k <=3; k++){
-         tab[i+k]=emplacement;
-      }
-      emplacement++;
-   }
+    for (int i = 0; i < TAILLE_JEU_DE_CARTE - 3; i = i + 4) {
+        for (int k = 0; k <= 3; k++) {
+            tab[i + k] = emplacement;
+        }
+        emplacement++;
+    }
+
+    for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++) {
+        partie[i] = -1;
+        printf("data %d\n",partie[i]);
+    }
 }
-
 /**
  * \fn void afficher_le_jeu_de_carte(int tab[52]){
  * \brief Fonction d'affichage du jeu de carte.
@@ -193,7 +197,8 @@ si 1 ==> carte jouée ou passe son tour
  si 2 ==> carte pas possible detre jouée (ordre),
  si 3==> il fautnjouer une carte pareille
  */
-int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]){
+
+int djouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]){
 
     //si la carte est 0 <=> le joueur choisit de passer son tour
     if (carte==0){
