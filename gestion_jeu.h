@@ -53,6 +53,7 @@ struct data_t{
     int nbCurrentUser;
     int aQuiDeJouer;
     int idProcessus[4];
+    int PPID;
 } ;
 
 /**

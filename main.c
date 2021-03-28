@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include "gestion_jeu.h"
 /**
  * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -12,10 +13,71 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-
 int kill(pid_t pid, int sig);
 
+
+
+
+void MONSIG(int num);
+
+void MONSIG(int num){
+    struct data_t *memoryShared;
+    switch(num){
+
+        case SIGUSR1:
+            printf("RECU");
+
+            break;
+            /**
+             * \fn reception du signal SIGALRM
+             * \brief alrm pour le thread pour ping l'utilisateur voulu !
+             * \param ouverture de la memoire partagée
+             * **/
+        case SIGALRM:
+
+            /*
+            memoryShared=getSharedMemory(1056); // Demande memoire partagée
+            semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
+            sem_wait(semProtectSharedMemory); // Début zone critique
+            printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
+            int aQuiDeJouer=memoryShared->aQuiDeJouer;
+
+            if(aQuiDeJouer==NB_JOUEURS){
+                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+                alarm(4);
+                memoryShared->aQuiDeJouer=1; // Remise en place du joeur
+                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+            }else{
+                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+                alarm(4);
+
+                memoryShared->aQuiDeJouer++; // Remise en place du joeur
+                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+            }
+
+            detachSharedMemory(memoryShared);
+            sem_post(semProtectSharedMemory);// Fin de zone critique
+            */
+
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+
 int main(){
+
+    /**
+    * Redéfinition des actions pour la reception d'un signal !
+    * **/
+    struct sigaction newact;
+    newact.sa_handler=MONSIG;
+    sigemptyset(&newact.sa_mask);
+    sigaction(SIGUSR1,&newact,NULL);
+    sigaction(SIGALRM,&newact,NULL);
 
     /**
     * \brief Creation de la memoire partagé qui est une structure data_t
@@ -23,17 +85,18 @@ int main(){
     * \param la clé utilisé est 1056
     * **/
     struct data_t *memoryShared;
-
     createSharedMemory(1056);
     memoryShared=getSharedMemory(1056);
 
-    // EXEMPLE POUR MARIETTE POUR ACCEDER AUX INFORMATIONS, NOTATION POINTEE
-    printf("%d",memoryShared->start);
 
     // Mise en place d'un semaphore
     semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
     sem_wait(semProtectSharedMemory); // Débit zone critique
 
+    printf("INFO : mon PID %d",getpid());
+    memoryShared->PPID=getpid();
+
+    memoryShared->aQuiDeJouer=1;
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte,memoryShared->partie);
     afficher_tab(memoryShared->jeu_de_carte);
     melanger_cartes(memoryShared->jeu_de_carte);
@@ -82,25 +145,32 @@ void * functionThreadPartie(void *pVoid) {
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
 
-    // Creation d'un tube nommé pour communiquer avec un client dans un sens.
-    if ( mkfifo("serverToJ1", 0666) == -1  ) { // Retourne 0 en cas de succès, -1 en cas d’échec
-        printf("INFO: echec de la création du tube serverToJ1");
-    }
-    //open("serverToJ1", O_WRONLY); // ouverture en écriture seule
-
     struct data_t *memoryShared;
+
     memoryShared=getSharedMemory(1056);
-
-    for (int i = 1; i <= NB_JOUEURS ; i++) {
-        printf("INFO : joueur %d - PID %d \n",i,memoryShared->idProcessus[i]);
-
-        // Envoyer le signal SIGUSR2 au processus
-        kill(memoryShared->idProcessus[i],SIGUSR1);
-
-    }
-
+    int flag=memoryShared->start;
     detachSharedMemory(memoryShared);
-    unlink("serverToJ1"); // Suppression du tube nommé serverToJ1
+
+
+    while (flag==1){
+
+        memoryShared=getSharedMemory(1056);
+        printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
+
+        int aQuiDeJouer=memoryShared->aQuiDeJouer;
+        if(aQuiDeJouer==NB_JOUEURS){
+            kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+            memoryShared->aQuiDeJouer=1; // Remise en place du joeur
+            printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+        }else{
+            kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+            memoryShared->aQuiDeJouer++; // Remise en place du joeur
+            printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+        }
+        flag=memoryShared->start;
+        detachSharedMemory(memoryShared);
+        sleep(3);
+    }
 
     pthread_exit(0);
 }
@@ -108,10 +178,12 @@ void * functionThreadPartie(void *pVoid) {
 
 /**
  * \fn vvoid *functionThreadMaitre(void *arg){
- * \brief Cette fonction est déclenché par le premier thread du programme. Il permet d'attendre que 4 personnes se connectent à la partie.
+ * \brief Cette fonction est déclenché par le premier thread du programme. Il permet d'attendre que NB_JOUEURS se connectent à la partie.
+ * Le temps
  * \param void *arg les paramatres du thread
 * **/
 void *functionThreadMaitre(){
+
     int flag = -1, timeout = 0 ;
     struct data_t *memoryShared;
     printf("INFO : recuperation du segment de memoire.\n");

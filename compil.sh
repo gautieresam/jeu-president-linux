@@ -1,5 +1,6 @@
 #!/bin/bash 
 
+./clean
 gcc -Wall -Wextra -c gestion_jeu.c -lpthread
 gcc -Wall -Wextra -c libClient.c -lpthread 
 
