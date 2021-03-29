@@ -14,8 +14,11 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-
-
+/**
+ * \fn void sleep_perso(double seconde)
+ * \brief Fonction d'attente maison !
+ * @param seconde
+ */
 void sleep_perso(double seconde){
     printf("function");
     time_t time1, time2;
@@ -25,7 +28,6 @@ void sleep_perso(double seconde){
     while (difftime(time2,time1)<seconde){
         time(&time2);
     }
-    printf("ok");
 }
 
 
@@ -168,7 +170,7 @@ void * functionThreadPartie(void *pVoid) {
     struct data_t *memoryShared;
 
     while (1){
-        sleep_perso(10);
+        sleep_perso(12);
 
         memoryShared=getSharedMemory(1056); // Demande memoire partagée
         semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
@@ -178,12 +180,10 @@ void * functionThreadPartie(void *pVoid) {
 
         if(aQuiDeJouer==NB_JOUEURS){
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
-            alarm(4);
             memoryShared->aQuiDeJouer=1; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
         }else{
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
-            alarm(4);
 
             memoryShared->aQuiDeJouer++; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
@@ -192,7 +192,7 @@ void * functionThreadPartie(void *pVoid) {
         detachSharedMemory(memoryShared);
         sem_post(semProtectSharedMemory);// Fin de zone critique
 
-        printf("\nPING 3 seconde\n");
+        printf("INFO : ping 10 seconde\n");
     }
 
     pthread_exit(0);
@@ -217,7 +217,7 @@ void *functionThreadMaitre(){
             memoryShared->start=1;
             pthread_cond_signal(&cond);
         }else{
-            printf("En attente des joueurs\n");
+            printf("INFO : en attente des joueurs\n");
         }
         detachSharedMemory(memoryShared);
         timeout++;
