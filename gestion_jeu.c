@@ -1,9 +1,5 @@
 #include "gestion_jeu.h"
 
-/***************************************************************************************
- * Partie Serveur Gautier
- ***************************************************************************************/
-
 /**
  * \fn void * createSharedMemory(int *cle){
  * \brief Cette fonction permet de crééer une memoire partagée.
@@ -20,7 +16,6 @@ void createSharedMemory(int cle){
     }
     printf("Serveur : segment cree.\n");
 }
-
 
 /**
  * \fn void *getSharedMemory(int *entier){
@@ -75,16 +70,6 @@ void deleteSharedMemory(int cle){
 }
 
 
-
-
-
-
-
-
-/***************************************************************************************
- * Partie Client Mariette
- ***************************************************************************************/
-
 /**
  * \fn void Initalisation_du_jeu_de_carte(int tab[52])
  * \brief Fonction d'initailisation du jeu. 1=> as 2=>2 11=>valet 12=>dame 13=>roi
@@ -108,6 +93,7 @@ void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE],int partie[TAILL
         printf("data %d\n",partie[i]);
     }
 }
+
 /**
  * \fn void afficher_le_jeu_de_carte(int tab[52]){
  * \brief Fonction d'affichage du jeu de carte.
@@ -150,9 +136,6 @@ void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
       jeu_de_carte[alea]=temp;
    }
 }
-
-
-
 
 int give_taille_de_la_main(){
     int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;

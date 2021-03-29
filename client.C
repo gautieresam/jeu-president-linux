@@ -98,12 +98,12 @@ void MONSIG(int num){
     switch(num){
 
         /**
-         * \fn reception du signal SIGUSR1
+         * \fn reception du signal SIGUSR1 depuis le serveur
          * \brief informe que l'utilisateur doit jouer, affiche ses cartes et demande ce qu'il souhaite jouer.
-         * \param ouverture de la memoire partagée
-         * **/
+         * Mise en place d'une alarme à la fin du traitement !
+         * \param ouverture et fermeture de la memoire partagée
+         */
         case SIGUSR1:
-            //printf("INFO SIGNAL : reception SIGUSR1\n");
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1); // Declaration protection
             sem_wait(semProtectSharedMemory); // Début zone critique
@@ -117,7 +117,6 @@ void MONSIG(int num){
             scanf("%d",&carteQueUtilisateurVeutJouer);
             alarm(3);
 
-
             break;
         case SIGUSR2:
             printf("INFO SIGNAL : reception SIGUSR2\n");
@@ -125,6 +124,11 @@ void MONSIG(int num){
 
         case SIGALRM:
 
+            /**
+             * \fn reception du signal SIGALRM
+             * \brief l'utilisateur a saisi sa valeur nous allons la verifier avec la fonction jouer_une_carte()
+             * \param ouverture et fermeture de la memoire partagée
+             */
             printf("INFO SIGNAL : reception alarme\n");
             printf("INFO : la carte à tester est %d\n",carteQueUtilisateurVeutJouer);
 
@@ -133,9 +137,6 @@ void MONSIG(int num){
             sem_wait(semProtectSharedMemory); // Début zone critique
 
             jouer_une_carte(id-1,carteQueUtilisateurVeutJouer,memoryShared->jeu_de_carte,memoryShared->partie);
-
-            // Prevenir le pere que j'ai fini !
-            //kill(memoryShared->PPID,SIGUSR1);
 
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
@@ -184,7 +185,6 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-
 /**
  * \fn void *functionThreadPartie(void *arg)
  * \brief Cette fonction est déclenché par un thread conditionnel.
@@ -202,16 +202,13 @@ void * functionThreadPartie(void *pVoid){
 /**
  * \fn void *functionThreadClient(void *arg){
  * \brief Premier thread client pour definir si je vais pouvoir jouer ! Pour cela on va regarder si il y a de la place dans la memoire partagé !
- *
- * \param
- * \return
+ * \param void *pVoid
  */
 void * functionThreadClient(void *pVoid){
 
     int shmid;
     struct data_t *memoryShared;
 
-    printf("INFO : THREAD CLIENT \n");
     /** Recuperation du segment de memoire partagee **/
     if((shmid = shmget((key_t)CLE, sizeof(struct data_t) * 1, 0)) == -1) {
         perror("Erreur lors de la recuperation du segment de memoire partagee ");
@@ -224,13 +221,6 @@ void * functionThreadClient(void *pVoid){
         perror("Erreur lors de l'attachement du segment de memoire partagee ");
         exit(EXIT_FAILURE);
     }
-
-    printf("INFO : la partie est-elle commencé 0 => non / 1 => oui : %d\n",memoryShared->start);
-    printf("INFO : nombre d'utilisateur si je m'ajoute à la partiee : %d\n",(memoryShared->nbCurrentUser+1));
-
-
-    //semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
-    //sem_wait(semProtectSharedMemory); // Débit zone critique
 
     if( memoryShared->start == 0 && (memoryShared->nbCurrentUser+1) <= NB_JOUEURS){
 
@@ -253,32 +243,20 @@ void * functionThreadClient(void *pVoid){
         exit(EXIT_FAILURE);
     }
 
-    //sem_post(semProtectSharedMemory);// Fin de zone critique
-
     pthread_exit(0);
 }
 
-
-
 /**
- * \fn
- * \brief
- *
- * \param
+ * \fn void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+ * \brief Afficher les carte d'un joueur suivant son identifiant !
+ * Pour rappel, le tableau est divisé en NB_JOUEUR
+ * Le joueur 1 posséde les cartes du tableau de 0 à TAILLE_JEU_DE_CARTE/NB_JOUEUR
+ * Le joueur 2 posséde les cartes du tableau de TAILLE_JEU_DE_CARTE/NB_JOUEUR à 2 fois TAILLE_JEU_DE_CARTE/NB_JOUEUR
+ * \param int numJoueur
+ * \param int jeu_de_carte[TAILLE_JEU_DE_CARTE]
  * \return
  */
-
-
-
-
-/**
- * \fn
- * \brief
- *
- * \param
- * \return
- */
-void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int taille_main = give_taille_de_la_main();
     int debut=taille_main*numJoueur;
     int fin=debut+taille_main;
@@ -296,38 +274,46 @@ void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE])
         }
     }
     printf("Passe son tour(0) ");
-
     printf("\n");
 }
 
+
+/**
+ * \fn int give_taille_de_la_main();
+ * \brief Donne la taille de la main en divisant la taille du jeu de carte par le nombre de joueur
+ * @return la taille de la main d'un joueur
+ */
 int give_taille_de_la_main(){
     int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
     return taille;
 }
 
 
-
-// Retourne la derneire carte
+/**
+ * \fn int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+ * \brief Retourne la derniere carte qui a été posé durant la partie !
+ * @param jeu_de_carte
+ * @return
+ */
 int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
-
     int i=0;
-    /**
-     * Gestion du cas ou il s'agit de la premiere carte posée
-     */
     if(jeu_de_carte[i]==-1){
         printf("INFO : premiere carte de la partie");
         i=1;
     }else{
-
         while (jeu_de_carte[i]!=-1){
             i++;
         }
     }
-
     return jeu_de_carte[i-1];
 }
 
-
+/**
+ * \fn int indice_partie(int partie[TAILLE_JEU_DE_CARTE])
+ * \brief Retourne l'indice du tableau ou le joueur va poser sa carte !
+ * @param partie, le tableau d'entier de la partie
+ * @return indice, un entier
+ */
 int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
     int flag=0, i=0,indice=0;
     while(flag==0 && i<(TAILLE_JEU_DE_CARTE-1)){
@@ -349,14 +335,12 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
     printf("INFO : indice de la carte à jouer %d\n",indiceP);
     printf("INFO : function jouer_carte %d\n",carteQueUtilisateurVeutJouer);
 
-    printf("DEBUG :");
     afficherLaGame(partie);
 
-
     /**
-     * si la carte est égal à 0, le joueur choisit de passer son tour
+     * Si la carte est égal à 0, le joueur choisit de passer son tour
      * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
-     **/
+     */
     if (carte==0){
         printf("INFO : joueur %d passe son tour",numJoueur);
         partie[indiceP]=-2;
@@ -365,7 +349,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     /**
      * Verifier que la  carte existe bien dans le jeu
-     **/
+     */
     while(flag==0 && i< fin){
         //printf("INFO : compare %d avec %d\n",jeu_de_carte[i], carte);
         if(jeu_de_carte[i]==carte){
@@ -379,7 +363,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
     /**
      * Si la carte n'est pas dans le jeu, procedure passer son tour
      * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
-     **/
+     */
     if( flag == 0 ){
         printf("INFO : la carte à jouer %d n'est pas dans le jeu du joueur\n",carte);
         partie[indiceP]=-2;
@@ -387,35 +371,35 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     /**
      * Recuperer la derniere carte du jeu !
-     **/
+     */
     last_card=get_derniere_carte(partie);
 
     /**
      * Carte=0 => couché , Carte=-1 => 1ere carte, carte=-2 => l'utilisateur a passé son tour
-     **/
+     */
     printf("INFO : la derniere carte %d\n",last_card);
 
+    /**
+     * Analyse de la partie
+     */
 
-    if(last_card == 0 || last_card == -1){
+    if(last_card == 0 || last_card == -1){ // Cas l'utilisateur est couché ou bien premiere carte
         printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
         carte_ok=1; // la carte
     }else if (last_card > 2 && carte > 2){
-        //cas classique, mettre une carte suppérieur ou egale (numériquement parlant)
-        if (carte >= last_card){
+        if (carte >= last_card){ //cas classique, mettre une carte suppérieur ou egale (numériquement parlant)
             printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
             carte_ok=1;
         } else{
             printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d\n",carte,last_card);
         }
-    }else if (last_card > 2 && carte <= 2){
-        //le joueur veut jouer un as ou un 2 au dessus d'une carte entre le 3 et le roi OK
+    }else if (last_card > 2 && carte <= 2){ //le joueur veut jouer un as ou un 2 au dessus d'une carte entre le 3 et le roi OK
+
         printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
         carte_ok=1;
-    }else if (last_card <= 2 && carte > 2){
-        //le joueur veut jouer une carte au dessus d'un as ou un 2 PAS POSSIBLE
+    }else if (last_card <= 2 && carte > 2){ //le joueur veut jouer une carte au dessus d'un as ou un 2 PAS POSSIBLE
         printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-    }else if (last_card <= 2 && carte <= 2){
-        //le joueur veut jouer un as ou un 2 au dessus d'un as ou un 2
+    }else if (last_card <= 2 && carte <= 2){  //le joueur veut jouer un as ou un 2 au dessus d'un as ou un 2
         if (last_card<=carte){
             printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
             carte_ok=1;
@@ -426,15 +410,27 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     //2. poser obligatoirement la meme carte
     //analyser les 3 dernières cartes
-    if (indiceP>1 && partie[indiceP-1]==last_card){
-        //2 dernière carte pareille = jouer une carte pareille
-        if (carte==last_card){
-            carte_ok=1;
+    // 0 1 2 3 4
+    // 2 2 2 X
+    if (indiceP>2 ){ // && partie[indiceP-1]==last_card
 
+        if(partie[indiceP-1]==carte && partie[indiceP-2]==carte && partie[indiceP-3]==carte){
+
+            // L'utilisateur va finir la plie et rejouer 3 consecutif
+            carte_ok=1;
+        }else if(partie[indiceP-1]==carte && partie[indiceP-2]==carte){
+            // Si 2 cartes à la suite identique le joueur peut jouer
+            carte_ok=1;
+        }else if (carte==last_card){
+            //2 dernière carte pareille = jouer une carte pareille
+            carte_ok=1;
         }else{
             printf("\n==>Veuillez poser obligatoirement une carte égale à la dernière carte posée\n");
         }
     }
+
+
+
 
     //jouer la carte
     if(flag==1 && carte_ok==1){
@@ -444,7 +440,6 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             partie[indiceP]=-2;
             return 0;
         }
-        printf("DEGUG : %d",carte);
         partie[indiceP]=carte;
         //mettre la carte à 0 dans le tab du jeu de carte
         jeu_de_carte[indice]=0;

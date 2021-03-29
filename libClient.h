@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 #include <errno.h>
-
 #define TAILLE_JEU_DE_CARTE 52 // 32 ou 52
 #define NB_JOUEURS 2
 #ifndef _STRUCTURES_
