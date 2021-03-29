@@ -9,6 +9,14 @@ void * functionThreadPartie(void *pVoid);
 int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]);
 
+/*
+void sleep_perso(int nbScondes){
+    time_t time1,time2;
+    time
+}
+ */
+
+
 
 /***
  * Declaration des variables globales pour un client
@@ -115,7 +123,7 @@ void MONSIG(int num){
 
             printf("USER : entre ta carte :");
             scanf("%d",&carteQueUtilisateurVeutJouer);
-            alarm(10);
+            alarm(5);
 
 
             break;
@@ -134,7 +142,7 @@ void MONSIG(int num){
             jouer_une_carte(id-1,carteQueUtilisateurVeutJouer,memoryShared->jeu_de_carte,memoryShared->partie);
 
             // Prevenir le pere que j'ai fini !
-            kill(memoryShared->PPID,SIGUSR1);
+            //kill(memoryShared->PPID,SIGUSR1);
 
 
             detachSharedMemory(memoryShared);

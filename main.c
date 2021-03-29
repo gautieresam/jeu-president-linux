@@ -1,5 +1,6 @@
 #include <sys/wait.h>
 #include "gestion_jeu.h"
+
 /**
  * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
  * \brief Initialisation d'un thread conditionnel.
@@ -13,19 +14,36 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
+
+
+void sleep_perso(double seconde){
+    printf("function");
+    time_t time1, time2;
+    time(&time1);
+    time(&time2);
+
+    while (difftime(time2,time1)<seconde){
+        time(&time2);
+    }
+    printf("ok");
+}
+
+
+
 int kill(pid_t pid, int sig);
-
-
-
 
 void MONSIG(int num);
 
+/**
+ *
+ * @param num
+ */
 void MONSIG(int num){
     struct data_t *memoryShared;
     switch(num){
 
         case SIGUSR1:
-            printf("RECU");
+            printf("INFO : reception SIGUSR1\n");
 
             break;
             /**
@@ -34,7 +52,7 @@ void MONSIG(int num){
              * \param ouverture de la memoire partagée
              * **/
         case SIGALRM:
-
+            printf("hello");
             /*
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
@@ -88,7 +106,6 @@ int main(){
     createSharedMemory(1056);
     memoryShared=getSharedMemory(1056);
 
-
     // Mise en place d'un semaphore
     semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1);
     sem_wait(semProtectSharedMemory); // Débit zone critique
@@ -129,7 +146,11 @@ int main(){
     /**
      * Supprimer la memoire partagée
      * **/
-    detachSharedMemory(memoryShared);
+    //detachSharedMemory(memoryShared);
+
+
+    pthread_join(threadPartie, &ret);
+
 
     return 0;
 }
@@ -144,32 +165,34 @@ void * functionThreadPartie(void *pVoid) {
 
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
-
     struct data_t *memoryShared;
 
-    memoryShared=getSharedMemory(1056);
-    int flag=memoryShared->start;
-    detachSharedMemory(memoryShared);
+    while (1){
+        sleep_perso(10);
 
-
-    while (flag==1){
-
-        memoryShared=getSharedMemory(1056);
+        memoryShared=getSharedMemory(1056); // Demande memoire partagée
+        semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
+        sem_wait(semProtectSharedMemory); // Début zone critique
         printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
-
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
+
         if(aQuiDeJouer==NB_JOUEURS){
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+            alarm(4);
             memoryShared->aQuiDeJouer=1; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
         }else{
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+            alarm(4);
+
             memoryShared->aQuiDeJouer++; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
         }
-        flag=memoryShared->start;
+
         detachSharedMemory(memoryShared);
-        sleep(3);
+        sem_post(semProtectSharedMemory);// Fin de zone critique
+
+        printf("\nPING 3 seconde\n");
     }
 
     pthread_exit(0);

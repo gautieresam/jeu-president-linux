@@ -56,6 +56,8 @@ struct data_t{
     int PPID;
 } ;
 
+void sleep_perso(double seconde);
+
 /**
  * \brief Prototype des fonctions côté serveur
  **/
