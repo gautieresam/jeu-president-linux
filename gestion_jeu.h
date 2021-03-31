@@ -26,7 +26,6 @@
 #endif
 
 
-
 /**
  * \fn sem_t *semProtectSharedMemory;
  * \brief Declaration du semaphore pour l'espace de memoire partagée

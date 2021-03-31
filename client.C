@@ -8,6 +8,7 @@ void * functionThreadClient(void *pVoid1);
 void * functionThreadPartie(void *pVoid);
 int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]);
+int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 
 /***
  * Declaration des variables globales pour un client
@@ -109,7 +110,13 @@ void MONSIG(int num){
             sem_wait(semProtectSharedMemory); // Début zone critique
             afficherLaGame(memoryShared->partie);// Afficher le jeu
             printf("INFO : afficher les cartes du joueur");
+
+
             afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
+
+            int res;
+            res=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);
+
             sem_post(semProtectSharedMemory);// Fin de zone critique
             detachSharedMemory(memoryShared);
 
@@ -276,6 +283,35 @@ void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     printf("Passe son tour(0) ");
     printf("\n");
 }
+
+
+
+
+
+/**
+ * \fn void compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+ * \brief Compte le nombre de cartes du joueur en fonction de son identifiant !
+ * \param int <numJoueur
+ * \param int jeu_de_carte[TAILLE_JEU_DE_CARTE]
+ * \return
+ */
+int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int taille_main = give_taille_de_la_main();
+    printf("DEBUG : compterNombreDeCartesdUnJoueur, taille de la main %d\n",taille_main);
+    int debut=taille_main*numJoueur;
+    int fin=debut+taille_main;
+    int compterNbZero=0;
+    for (int i = debut; i < fin; i++){
+
+        if (jeu_de_carte[i]==0){
+            //Compte le nombre de 0
+            compterNbZero++;
+        }
+    }
+    printf("Il y a %d zero \n",compterNbZero);
+    return taille_main-compterNbZero;
+}
+
 
 
 /**
