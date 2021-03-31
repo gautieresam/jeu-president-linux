@@ -403,10 +403,21 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
         if (last_card<=carte){
             printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
             carte_ok=1;
+
+            // Mettre if et dire que c est l utilisatuer qui doit rejouer
+
         }else{
             printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d\n",carte,last_card);
         }
     }
+
+
+
+    // SI tous les joueurs passe que se passee til
+    // Si la carte d'avnt est couché il faut regarder la carte encore d avant
+
+
+
 
     //2. poser obligatoirement la meme carte
     //analyser les 3 dernières cartes
@@ -414,23 +425,17 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
     // 2 2 2 X
     if (indiceP>2 ){ // && partie[indiceP-1]==last_card
 
-        if(partie[indiceP-1]==carte && partie[indiceP-2]==carte && partie[indiceP-3]==carte){
+        if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-1]==partie[indiceP-3]  ){
 
             // L'utilisateur va finir la plie et rejouer 3 consecutif
             carte_ok=1;
-        }else if(partie[indiceP-1]==carte && partie[indiceP-2]==carte){
+        }else if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]==carte){
             // Si 2 cartes à la suite identique le joueur peut jouer
-            carte_ok=1;
-        }else if (carte==last_card){
-            //2 dernière carte pareille = jouer une carte pareille
             carte_ok=1;
         }else{
             printf("\n==>Veuillez poser obligatoirement une carte égale à la dernière carte posée\n");
         }
     }
-
-
-
 
     //jouer la carte
     if(flag==1 && carte_ok==1){

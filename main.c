@@ -168,7 +168,6 @@ void * functionThreadPartie(void *pVoid) {
     struct data_t *memoryShared;
 
     while (1){
-        sleep_perso(12);
 
         memoryShared=getSharedMemory(1056); // Demande memoire partagée
         semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
@@ -191,6 +190,8 @@ void * functionThreadPartie(void *pVoid) {
         sem_post(semProtectSharedMemory);// Fin de zone critique
 
         printf("INFO : ping 10 seconde\n");
+        sleep_perso(12);
+
     }
 
     pthread_exit(0);
