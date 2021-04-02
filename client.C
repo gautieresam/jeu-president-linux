@@ -151,12 +151,12 @@ void MONSIG(int num){
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
 
-        /*
+
             void *ret;
             pthread_t threadTest;
             pthread_create(&threadTest, NULL,functionThreadTest, NULL);
             pthread_join(threadTest, &ret);
-        */
+
             break;
 
         default:
