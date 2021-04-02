@@ -483,6 +483,9 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
     // 2 2 2 X
     if (indiceP>2 ){ // && partie[indiceP-1]==last_card
 
+
+        //test
+
         if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-1]==partie[indiceP-3]  ){
 
             // L'utilisateur va finir la plie et rejouer 3 consecutif
