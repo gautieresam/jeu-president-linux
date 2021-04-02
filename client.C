@@ -484,7 +484,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
     if (indiceP>2 ){ // && partie[indiceP-1]==last_card
 
 
-        //test
+        //test main
 
         if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-1]==partie[indiceP-3]  ){
 
