@@ -37,6 +37,8 @@ sys/shm.h
 -
 
 /home/gautier/CLionProjects/president-linux-processus-/main.c
+sys/wait.h
+-
 gestion_jeu.h
 /home/gautier/CLionProjects/president-linux-processus-/gestion_jeu.h
 

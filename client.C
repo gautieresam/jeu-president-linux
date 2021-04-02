@@ -9,6 +9,7 @@ void * functionThreadPartie(void *pVoid);
 int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]);
 int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+void * functionThreadTest(void *pVoid);
 
 /***
  * Declaration des variables globales pour un client
@@ -114,8 +115,10 @@ void MONSIG(int num){
 
             afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
 
-            int res;
-            res=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);
+            int nbCartesJoueurs;
+            nbCartesJoueurs=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);
+
+
 
             sem_post(semProtectSharedMemory);// Fin de zone critique
             detachSharedMemory(memoryShared);
@@ -147,6 +150,13 @@ void MONSIG(int num){
 
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
+
+        /*
+            void *ret;
+            pthread_t threadTest;
+            pthread_create(&threadTest, NULL,functionThreadTest, NULL);
+            pthread_join(threadTest, &ret);
+        */
             break;
 
         default:
@@ -202,9 +212,22 @@ void * functionThreadPartie(void *pVoid){
 
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : Attente des informations du serveur ;\n");
-    pause();
+
+
+        pause();
+
     pthread_exit(0);
 }
+
+void * functionThreadTest(void *pVoid){
+
+    pause();
+
+    pthread_exit(0);
+}
+
+
+
 
 /**
  * \fn void *functionThreadClient(void *arg){
@@ -308,7 +331,7 @@ int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_
             compterNbZero++;
         }
     }
-    printf("Il y a %d zero \n",compterNbZero);
+    printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
     return taille_main-compterNbZero;
 }
 
@@ -334,7 +357,7 @@ int give_taille_de_la_main(){
 int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int i=0;
     if(jeu_de_carte[i]==-1){
-        printf("INFO : premiere carte de la partie");
+        printf("INFO : premiere carte de la partie\n");
         i=1;
     }else{
         while (jeu_de_carte[i]!=-1){
@@ -380,7 +403,6 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
     if (carte==0){
         printf("INFO : joueur %d passe son tour",numJoueur);
         partie[indiceP]=-2;
-        return 1;
     }
 
     /**
@@ -469,7 +491,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             // Si 2 cartes à la suite identique le joueur peut jouer
             carte_ok=1;
         }else{
-            printf("\n==>Veuillez poser obligatoirement une carte égale à la dernière carte posée\n");
+            printf("toto\n");
         }
     }
 
@@ -479,12 +501,12 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
         if (indiceP >= TAILLE_JEU_DE_CARTE){
             printf("\n==>La carte saisie n'existe pas dans votre jeu\n");
             partie[indiceP]=-2;
-            return 0;
+            //return 0;
         }
         partie[indiceP]=carte;
         //mettre la carte à 0 dans le tab du jeu de carte
         jeu_de_carte[indice]=0;
-        return 1;
+        //return 1;
     }
     return 0;
 
