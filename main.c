@@ -190,7 +190,7 @@ void * functionThreadPartie(void *pVoid) {
         sem_post(semProtectSharedMemory);// Fin de zone critique
 
         printf("INFO : ping 10 seconde\n");
-        sleep_perso(6);
+        sleep_perso(7);
 
     }
 

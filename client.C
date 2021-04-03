@@ -151,12 +151,6 @@ void MONSIG(int num){
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
 
-        /*
-            void *ret;
-            pthread_t threadTest;
-            pthread_create(&threadTest, NULL,functionThreadTest, NULL);
-            pthread_join(threadTest, &ret);
-        */
             break;
 
         default:
@@ -213,18 +207,13 @@ void * functionThreadPartie(void *pVoid){
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : Attente des informations du serveur ;\n");
 
-
-        pause();
-
-    pthread_exit(0);
-}
-
-void * functionThreadTest(void *pVoid){
-
-    pause();
+    while (1){
+        sleep(30);
+    }
 
     pthread_exit(0);
 }
+
 
 
 
@@ -391,7 +380,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     int indice=-1,taille_main = give_taille_de_la_main(),debut=taille_main*numJoueur,fin=debut+taille_main,i=debut, flag=0,last_card=-9,carte_ok=0,indiceP=indice_partie(partie);
 
-    printf("INFO : indice de la carte à jouer %d\n",indiceP);
+    printf("INFO : indice de la carte à jouer %d \n",indiceP);
     printf("INFO : function jouer_carte %d\n",carteQueUtilisateurVeutJouer);
 
     afficherLaGame(partie);
