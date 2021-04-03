@@ -204,6 +204,12 @@ int main() {
 * **/
 void * functionThreadPartie(void *pVoid){
 
+    struct sigaction newact;
+    newact.sa_handler=MONSIG;
+    sigemptyset(&newact.sa_mask);
+    sigaction(SIGUSR1,&newact,NULL);
+    sigaction(SIGALRM,&newact,NULL);
+
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : Attente des informations du serveur ;\n");
 
