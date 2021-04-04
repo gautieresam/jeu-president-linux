@@ -214,7 +214,7 @@ void * functionThreadPartie(void *pVoid){
     printf("INFO : Attente des informations du serveur ;\n");
 
     while (1){
-        sleep(30);
+        sleep(20000);
     }
 
     pthread_exit(0);
@@ -395,7 +395,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
      * Si la carte est égal à 0, le joueur choisit de passer son tour
      * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
      */
-    if (carte==0){
+    if (carte==0 || carte == -1 ){
         printf("INFO : joueur %d passe son tour",numJoueur);
         partie[indiceP]=-2;
     }
