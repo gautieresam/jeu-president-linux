@@ -497,7 +497,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
         /**
         * Analyse de la partie
         */
-        if(last_card == 0 || last_card == -1){ // Cas l'utilisateur est couché ou bien premiere carte
+        if( last_card == -1){ // Cas l'utilisateur est couché ou bien premiere carte
             printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
             carte_ok=1; // la carte
         }else if (last_card > 2 && carte > 2){
