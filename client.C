@@ -10,6 +10,8 @@ int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]);
 int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 void * functionThreadTest(void *pVoid);
+int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]);
+
 
 /***
  * Declaration des variables globales pour un client
@@ -139,8 +141,8 @@ void MONSIG(int num){
              * \brief l'utilisateur a saisi sa valeur nous allons la verifier avec la fonction jouer_une_carte()
              * \param ouverture et fermeture de la memoire partagée
              */
-            printf("INFO SIGNAL : reception alarme\n");
-            printf("INFO : la carte à tester est %d\n",carteQueUtilisateurVeutJouer);
+            //printf("INFO SIGNAL : reception alarme\n");
+            //printf("INFO : la carte à tester est %d\n",carteQueUtilisateurVeutJouer);
 
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
@@ -315,7 +317,7 @@ void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
  */
 int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int taille_main = give_taille_de_la_main();
-    printf("DEBUG : compterNombreDeCartesdUnJoueur, taille de la main %d\n",taille_main);
+    //printf("DEBUG : compterNombreDeCartesdUnJoueur, taille de la main %d\n",taille_main);
     int debut=taille_main*numJoueur;
     int fin=debut+taille_main;
     int compterNbZero=0;
@@ -326,7 +328,7 @@ int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_
             compterNbZero++;
         }
     }
-    printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
+    //printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
     return taille_main-compterNbZero;
 }
 
@@ -380,18 +382,64 @@ int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
     return indice;
 }
 
+/**
+ * \fn int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)])
+ * \brief Retourne le nombre de carte identique à un instant T de la partie
+ * @param partie, le tableau d'entier de la partie
+ * @return nbCartesIdentiques , un entier
+ */
 int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
 
     int nbCartesIdentiques=-1;
     int indice=-1, flag=0,last_card=-9,carte_ok=0;
     int indiceP=indice_partie(partie);
 
-    printf("INFO getNombreDeCarteIdentiqueAlaSuite : \n");
+    //printf("--INFO getNombreDeCarteIdentiqueAlaSuite  \n");
+    //printf("--INFO : indiceP %d\n",indiceP);
 
-    for(int i=0;i<indiceP-1;i++){
-        printf("DEBUG : indice=%d carte=%d\n",i,partie[i]);
+
+    // Si on pose la premiere carte il n'est pas possible d'avoir une carte identique avant..
+    if(indiceP == 0 ) {
+        printf("---Pas de carte identique car premiere carte ! #0\n");
+        nbCartesIdentiques = 0;
+
+    // Si on pose la seconde carte il y a une carte avant !
+    }else if(indiceP == 1 ){
+        printf("---Il y a une carte avant ! #1\n");
+        nbCartesIdentiques = 1;
+
+    //Si on pose la troisieme carte du jeu il peut y avoir 2 cartes identiques
+    } else if(indiceP==2){
+
+        if(partie[indiceP-1]==partie[indiceP-2]){
+            printf("---Il y a 2 carte identiques avant !#2\n");
+            nbCartesIdentiques = 2;
+
+        }else {
+            printf("---Il n'y pas de cartes identiques avant ! #2\n");
+            nbCartesIdentiques = 1;
+        }
+
+    //Si on pose la troisieme carte du jeu il peut y avoir 3 cartes identiques !
+    }else{
+
+        // Si il y a 3 cartes identiques avant !
+        if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]==partie[indiceP-3] && partie[indiceP-1]==partie[indiceP-3]){
+            printf("---Il y a 3 cartes identiques avant ! #3\n");
+            nbCartesIdentiques = 3;
+
+        // Si il y a 2 cartes identiques avant !
+        }else if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]!=partie[indiceP-3] ){
+            printf("---Il y a 2 cartes identiques avant ! #3\n");
+            nbCartesIdentiques = 2;
+
+        // Il y a donc 1 carte
+        }else{
+            printf("---Il y a 1 carte avant ! #3\n");
+            nbCartesIdentiques = 1;
+        }
+
     }
-
 
 
     // Retourner le nombre de carte identique
@@ -403,13 +451,14 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     int indice=-1,taille_main = give_taille_de_la_main(),debut=taille_main*numJoueur,fin=debut+taille_main,i=debut, flag=0,last_card=-9,carte_ok=0,indiceP=indice_partie(partie);
 
-    printf("\nINFO : indice de la carte à jouer %d \n",indiceP);
-    printf("INFO : function jouer_carte %d\n",carteQueUtilisateurVeutJouer);
+    printf("\nFONCTION : jouer une carte \n");
+    //printf("INFO : indice de la carte à jouer %d \n",indiceP);
+    printf("INFO : indice=%d carteAJouer=%d\n",indiceP,carteQueUtilisateurVeutJouer);
 
     afficherLaGame(partie);
 
     int nbCArtesIdentiques = getNombreDeCarteIdentiqueAlaSuite(partie);
-
+    //printf("DEBUG : Nombre de carte identique %d\n",nbCArtesIdentiques);
 
     /**
      * Si la carte est égal à 0, le joueur choisit de passer son tour
@@ -417,7 +466,6 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
      */
     if ( carte == -1 ){
         printf("INFO : joueur %d passe son tour \n",numJoueur);
-        partie[indiceP]=0;
 
     }else{
 
@@ -444,7 +492,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
         * Recuperer la derniere carte du jeu !
         */
         last_card=get_derniere_carte(partie);
-        printf("INFO : la derniere carte %d\n",last_card);
+        //printf("INFO : la derniere carte %d\n",last_card);
 
         /**
         * Analyse de la partie
@@ -479,6 +527,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             carte_ok==1;
         }
 
+
         //jouer la carte
         if(flag==1 && carte_ok==1){
             //ajout la carte dans la partie (recupérer indice de jeu)
@@ -488,9 +537,6 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             }
             partie[indiceP]=carte;
             jeu_de_carte[indice]=0;
-        }else{
-            printf("FINAL: on va jouer la carte -2 !!");
-            partie[indiceP]=-2;
         }
 
     }
@@ -524,7 +570,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
 
  */
-
+    printf("------------------------------------------------------\n\n");
     return 0;
 
 }
