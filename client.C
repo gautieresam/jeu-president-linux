@@ -15,7 +15,7 @@ void * functionThreadTest(void *pVoid);
  * Declaration des variables globales pour un client
  * */
 int id=0;
-int carteQueUtilisateurVeutJouer=-1;
+int carteQueUtilisateurVeutJouer=-10;
 
 /**
  * \fn sem_t *semProtectSharedMemory;
@@ -106,6 +106,7 @@ void MONSIG(int num){
          * \param ouverture et fermeture de la memoire partagée
          */
         case SIGUSR1:
+            carteQueUtilisateurVeutJouer=-10;
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1); // Declaration protection
             sem_wait(semProtectSharedMemory); // Début zone critique
@@ -117,7 +118,6 @@ void MONSIG(int num){
 
             int nbCartesJoueurs;
             nbCartesJoueurs=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);
-
 
 
             sem_post(semProtectSharedMemory);// Fin de zone critique
@@ -380,6 +380,23 @@ int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
     return indice;
 }
 
+int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
+
+    int nbCartesIdentiques=-1;
+    int indice=-1, flag=0,last_card=-9,carte_ok=0;
+    int indiceP=indice_partie(partie);
+
+    printf("INFO getNombreDeCarteIdentiqueAlaSuite : \n");
+
+    for(int i=0;i<indiceP-1;i++){
+        printf("DEBUG : indice=%d carte=%d\n",i,partie[i]);
+    }
+
+
+
+    // Retourner le nombre de carte identique
+    return nbCartesIdentiques;
+}
 
 
 int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]){
@@ -391,11 +408,14 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     afficherLaGame(partie);
 
+    int nbCArtesIdentiques = getNombreDeCarteIdentiqueAlaSuite(partie);
+
+
     /**
      * Si la carte est égal à 0, le joueur choisit de passer son tour
      * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
      */
-    if (carte ==0 || carte == -1 ){
+    if ( carte == -1 ){
         printf("INFO : joueur %d passe son tour \n",numJoueur);
         partie[indiceP]=0;
 
