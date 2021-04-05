@@ -499,6 +499,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #1\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
+
                 } else {
                     printf("INFO : on a posé un 2 #2");
                     partie[indiceP] = carte;
@@ -515,6 +516,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     jeu_de_carte[indice] = 0;
                 } else {
                     printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d #4\n", carte, last_card);
+                    // Lever le tageul
                 }
 
             } else if (nbCArtesIdentiques == 3) {
@@ -523,8 +525,10 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #5\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
+                    // Faire jouer le joueur
                 } else {
                     printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                    //Lever le tageul
                 }
 
             } else {
