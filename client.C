@@ -401,7 +401,7 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
     // Si on pose la premiere carte il n'est pas possible d'avoir une carte identique avant..
     if(indiceP == 0 ) {
         printf("---Pas de carte identique car premiere carte ! #0\n");
-        nbCartesIdentiques = 0;
+        nbCartesIdentiques = 1;
 
     // Si on pose la seconde carte il y a une carte avant !
     }else if(indiceP == 1 ){
@@ -435,7 +435,7 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
 
         // Il y a donc 1 carte
         }else{
-            printf("---Il y a 1 carte avant ! #3\n");
+            printf("-------Il y a 1 carte avant ! #3\n");
             nbCartesIdentiques = 1;
         }
 
@@ -447,34 +447,35 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
 }
 
 
-int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]){
+int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]) {
 
-    int indice=-1,taille_main = give_taille_de_la_main(),debut=taille_main*numJoueur,fin=debut+taille_main,i=debut, flag=0,last_card=-9,carte_ok=0,indiceP=indice_partie(partie);
+    int indice = -1, taille_main = give_taille_de_la_main(), debut = taille_main * numJoueur, fin =
+            debut + taille_main, i = debut, flag = 0, last_card = -9, carte_ok = 0, indiceP = indice_partie(partie);
 
     printf("\nFONCTION : jouer une carte \n");
     //printf("INFO : indice de la carte à jouer %d \n",indiceP);
-    printf("INFO : indice=%d carteAJouer=%d\n",indiceP,carteQueUtilisateurVeutJouer);
+    printf("INFO : indice=%d carteAJouer=%d\n", indiceP, carteQueUtilisateurVeutJouer);
 
     afficherLaGame(partie);
 
     int nbCArtesIdentiques = getNombreDeCarteIdentiqueAlaSuite(partie);
-    //printf("DEBUG : Nombre de carte identique %d\n",nbCArtesIdentiques);
+    printf("DEBUG : Nombre de carte identique %d\n",nbCArtesIdentiques);
 
     /**
      * Si la carte est égal à 0, le joueur choisit de passer son tour
      * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
      */
-    if ( carte == -1 ){
-        printf("INFO : joueur %d passe son tour \n",numJoueur);
+    if (carte == -1) {
+        printf("INFO : joueur %d passe son tour \n", numJoueur);
 
-    }else{
+    } else {
 
         //Verifier que la  carte existe bien dans le jeu
-        while(flag==0 && i< fin){
+        while (flag == 0 && i < fin) {
             //printf("INFO : compare %d avec %d\n",jeu_de_carte[i], carte);
-            if(jeu_de_carte[i]==carte){
-                flag=1;
-                indice=i;
+            if (jeu_de_carte[i] == carte) {
+                flag = 1;
+                indice = i;
                 printf("INFO : la carte joué est dans le jeu du joueur\n");
             }
             i++;
@@ -483,94 +484,52 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
         * Si la carte n'est pas dans le jeu, procedure passer son tour
         * Mettre -2 dans le tableau partie pour indiquer que le joueur passe son tour !
         */
-        if( flag == 0 ){
-            printf("INFO : la carte à jouer %d n'est pas dans le jeu du joueur\n",carte);
-            carte_ok=-3;
-        }
+        if (flag == 0) {
+            printf("INFO : la carte à jouer %d n'est pas dans le jeu du joueur\n", carte);
+            carte_ok = -3;
+        } else {
 
-        /**
-        * Recuperer la derniere carte du jeu !
-        */
-        last_card=get_derniere_carte(partie);
-        //printf("INFO : la derniere carte %d\n",last_card);
+            //Recuperer la derniere carte du jeu !
+            last_card = get_derniere_carte(partie);
 
-        /**
-        * Analyse de la partie
-        */
-        if( last_card == -1){ // Cas l'utilisateur est couché ou bien premiere carte
-            printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-            carte_ok=1; // la carte
-        }else if (last_card > 2 && carte > 2){
-            if (carte >= last_card){ //cas classique, mettre une carte suppérieur ou egale (numériquement parlant)
-                printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-                carte_ok=1;
-            } else{
-                printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d\n",carte,last_card);
+            // Si le nombre de carte égal à 1 on doit poser une carte équivalente ou supérieur
+            if (nbCArtesIdentiques == 1) {
+
+                if (last_card <= carte_ok && carte != 2) {
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #1\n", carte, last_card);
+                    partie[indiceP] = carte;
+                    jeu_de_carte[indice] = 0;
+                } else {
+                    printf("INFO : on a posé un 2 #2");
+                    partie[indiceP] = carte;
+                    jeu_de_carte[indice] = 0;
+                    // Preciser le joueur qui doit rejouer
+                }
+
+                // L'utilisateur doit forcement poser une carte identique
+            } else if (nbCArtesIdentiques == 2) {
+
+                if (last_card == carte) {
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #3\n", carte, last_card);
+                    partie[indiceP] = carte;
+                    jeu_de_carte[indice] = 0;
+                } else {
+                    printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d #4\n", carte, last_card);
+                }
+
+            } else if (nbCArtesIdentiques == 3) {
+
+                if (last_card == carte) {
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #5\n", carte, last_card);
+                    partie[indiceP] = carte;
+                    jeu_de_carte[indice] = 0;
+                } else {
+                    printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                }
+
+            } else {
+                printf("Il y a un pb mdr \n");
             }
-        }else if (last_card > 2 && carte <= 2){ //le joueur veut jouer un as ou un 2 au dessus d'une carte entre le 3 et le roi OK
-
-            printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-            carte_ok=1;
-        }else if (last_card <= 2 && carte > 2){ //le joueur veut jouer une carte au dessus d'un as ou un 2 PAS POSSIBLE
-            printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-        }else if (last_card <= 2 && carte <= 2){  //le joueur veut jouer un as ou un 2 au dessus d'un as ou un 2
-            if (last_card<=carte){
-                printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-                carte_ok=1;
-                // Mettre if et dire que c est l utilisatuer qui doit rejouer
-            }else{
-                printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d\n",carte,last_card);
-            }
-        }else{
-
-            // Il faut traiter le cas ou la carte avant est -1 et -2
-            carte_ok==1;
-        }
-
-
-        //jouer la carte
-        if(flag==1 && carte_ok==1){
-            //ajout la carte dans la partie (recupérer indice de jeu)
-            if (indiceP >= TAILLE_JEU_DE_CARTE){
-                printf("\n==>La carte saisie n'existe pas dans votre jeu\n");
-                partie[indiceP]=-2;
-            }
-            partie[indiceP]=carte;
-            jeu_de_carte[indice]=0;
-        }
-
-    }
-
-
-
-
-/*
-
-
-    // SI tous les joueurs passe que se passee til
-    // Si la carte d'avnt est couché il faut regarder la carte encore d avant
-
-    //2. poser obligatoirement la meme carte
-    //analyser les 3 dernières cartes
-    // 0 1 2 3 4
-    // 2 2 2 X
-    if (indiceP>2 ){ // && partie[indiceP-1]==last_card
-
-        if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-1]==partie[indiceP-3]  ){
-
-            // L'utilisateur va finir la plie et rejouer 3 consecutif
-            carte_ok=1;
-        }else if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]==carte){
-            // Si 2 cartes à la suite identique le joueur peut jouer
-            carte_ok=1;
-        }else{
-            printf("toto\n");
         }
     }
-
-
- */
-    printf("------------------------------------------------------\n\n");
-    return 0;
-
 }
