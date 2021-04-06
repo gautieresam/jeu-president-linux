@@ -7,7 +7,7 @@ void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE])
 void * functionThreadClient(void *pVoid1);
 void * functionThreadPartie(void *pVoid);
 int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
-int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]);
+int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)],int tageule);
 int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 void * functionThreadTest(void *pVoid);
 int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]);
@@ -74,7 +74,6 @@ void detachSharedMemory(struct data_t *memoryShared){
  */
 void afficherLaGame(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 
-    printf("INFO : afficher la partie\n");
     for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
         if (jeu_de_carte[i]==11){
             printf("Valet ");
@@ -108,10 +107,13 @@ void MONSIG(int num){
          * \param ouverture et fermeture de la memoire partagée
          */
         case SIGUSR1:
+            printf("\n");
             carteQueUtilisateurVeutJouer=-10;
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1); // Declaration protection
             sem_wait(semProtectSharedMemory); // Début zone critique
+            printf("A ton tour de jouer !! Voici la partie ! \n");
+
             afficherLaGame(memoryShared->partie);// Afficher le jeu
             printf("INFO : afficher les cartes du joueur");
 
@@ -148,7 +150,7 @@ void MONSIG(int num){
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
             sem_wait(semProtectSharedMemory); // Début zone critique
 
-            jouer_une_carte(id-1,carteQueUtilisateurVeutJouer,memoryShared->jeu_de_carte,memoryShared->partie);
+            jouer_une_carte(id-1,carteQueUtilisateurVeutJouer,memoryShared->jeu_de_carte,memoryShared->partie,memoryShared->tageule);
 
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
@@ -400,23 +402,23 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
 
     // Si on pose la premiere carte il n'est pas possible d'avoir une carte identique avant..
     if(indiceP == 0 ) {
-        printf("---Pas de carte identique car premiere carte ! #0\n");
+        //printf("---Pas de carte identique car premiere carte ! #0\n");
         nbCartesIdentiques = 1;
 
     // Si on pose la seconde carte il y a une carte avant !
     }else if(indiceP == 1 ){
-        printf("---Il y a une carte avant ! #1\n");
+        //printf("---Il y a une carte avant ! #1\n");
         nbCartesIdentiques = 1;
 
     //Si on pose la troisieme carte du jeu il peut y avoir 2 cartes identiques
     } else if(indiceP==2){
 
         if(partie[indiceP-1]==partie[indiceP-2]){
-            printf("---Il y a 2 carte identiques avant !#2\n");
+            //printf("---Il y a 2 carte identiques avant !#2\n");
             nbCartesIdentiques = 2;
 
         }else {
-            printf("---Il n'y pas de cartes identiques avant ! #2\n");
+            //printf("---Il n'y pas de cartes identiques avant ! #2\n");
             nbCartesIdentiques = 1;
         }
 
@@ -447,14 +449,13 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
 }
 
 
-int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)]) {
+int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CARTE)], int partie[(TAILLE_JEU_DE_CARTE)],int tageule) {
 
     int indice = -1, taille_main = give_taille_de_la_main(), debut = taille_main * numJoueur, fin =
             debut + taille_main, i = debut, flag = 0, last_card = -9, carte_ok = 0, indiceP = indice_partie(partie);
 
-    printf("\nFONCTION : jouer une carte \n");
     //printf("INFO : indice de la carte à jouer %d \n",indiceP);
-    printf("INFO : indice=%d carteAJouer=%d\n", indiceP, carteQueUtilisateurVeutJouer);
+    printf("INFO : indice=%d carteAJouer=%d tageule=%d\n", indiceP, carteQueUtilisateurVeutJouer,tageule);
 
     afficherLaGame(partie);
 
@@ -476,7 +477,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             if (jeu_de_carte[i] == carte) {
                 flag = 1;
                 indice = i;
-                printf("INFO : la carte joué est dans le jeu du joueur\n");
+                //printf("INFO : la carte joué est dans le jeu du joueur\n");
             }
             i++;
         }
@@ -495,40 +496,78 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             // Si le nombre de carte égal à 1 on doit poser une carte équivalente ou supérieur
             if (nbCArtesIdentiques == 1) {
 
-                if (last_card <= carte_ok && carte != 2) {
-                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #1\n", carte, last_card);
+                // Si on pose une carte au dessus d'une autre sachant qu'on ne joue pas un 2 ou un 1
+                // 1 3 4 5 6 7 8 9 10 11 12 13
+                if (last_card<carte && carte!=2 ) {
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
 
-                } else {
-                    printf("INFO : on a posé un 2 #2");
+                // Si on pose une carte identique à la precedente est différente de 2
+                } else if(last_card==carte && carte!=2){
+
+                    // Il faut lever le tageule ! pour le prochain joueur
+                    tageule=1;
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
-                    // Preciser le joueur qui doit rejouer
+
+
+                // Si l'utilisateur pose un 2
+                }else if(carte==2 ){
+                    tageule=1;
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #2\n", carte, last_card,tageule);
+                    partie[indiceP] = carte;
+                    jeu_de_carte[indice] = 0;
+
+
+                }else{
+                    printf("ERRRRRRRRRRRRRRORRRRR #3");
                 }
 
-                // L'utilisateur doit forcement poser une carte identique
             } else if (nbCArtesIdentiques == 2) {
 
-                if (last_card == carte) {
-                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #3\n", carte, last_card);
+                // Il y a 2 cartes identiques l'utilisateur doit obligatoirement poser la même carte si le tageule est à 1 !
+                if (last_card==carte && tageule==1) {
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #4\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
-                } else {
-                    printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d #4\n", carte, last_card);
-                    // Lever le tageul
-                }
 
-            } else if (nbCArtesIdentiques == 3) {
-
-                if (last_card == carte) {
+                // Il y a 2 cartes identiques mais une personne a passé son tour tu peux donc poser ce que tu veux
+                // Le joueur suivant va pouvoir jouer ce qu'il veut
+                } else if  ( tageule==0) {
                     printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #5\n", carte, last_card);
                     partie[indiceP] = carte;
+                    jeu_de_carte[indice] = 0;// Lever le tageul
+
+                // Si jamais il y a un problème !
+                }else {
+                    printf("INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                }
+            // Il y a 3 cartes identiques l'utilisateur
+            } else if (nbCArtesIdentiques == 3) {
+
+                // Il y a 2 cartes identiques l'utilisateur doit obligatoirement poser la même carte si le tageule est à 1 !
+                // Il va recuperer la main !
+                if (last_card == carte && tageule==1) {
+                    printf("INFO : bonne carte, carte à jouer %d, la carte d'avant %d #7\n", carte, last_card);
+                    partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
-                    // Faire jouer le joueur
-                } else {
-                    printf("INFO : mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+
+                    if(numJoueur==1){
+                        numJoueur=4;
+                        printf("MODIFICATION DU JOUEUR A PING ! %d",numJoueur);
+                    }else{
+                        numJoueur--;
+                        printf("MODIFICATION DU JOUEUR A PING ! %d",numJoueur);
+
+                    }
+
+                // Faire jouer le joueur
+                } else if(tageule==0){
+                    printf("INFO :  bonne carte ,carte à jouer %d, la carte d'avant %d #8\n", carte, last_card);
                     //Lever le tageul
+
                 }
 
             } else {

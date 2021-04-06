@@ -108,6 +108,7 @@ int main(){
      * \brief Initialiser le joueur qui va commencer le premier
      */
     memoryShared->aQuiDeJouer=1;
+    memoryShared->tageule=0;
 
 
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte,memoryShared->partie);
@@ -174,6 +175,8 @@ void * functionThreadPartie(void *pVoid) {
         sem_wait(semProtectSharedMemory); // Début zone critique
         printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
+
+        printf("TAGEUL=%d\n",memoryShared->tageule);
 
         if(aQuiDeJouer==NB_JOUEURS){
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
