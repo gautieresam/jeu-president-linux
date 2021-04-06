@@ -108,17 +108,17 @@ int main(){
      * \brief Initialiser le joueur qui va commencer le premier
      */
     memoryShared->aQuiDeJouer=1;
-    memoryShared->tageule=0;
+    memoryShared->tageule[0]=0;
 
 
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte,memoryShared->partie);
     afficher_tab(memoryShared->jeu_de_carte);
     melanger_cartes(memoryShared->jeu_de_carte);
     afficher_tab(memoryShared->jeu_de_carte);
-    afficher_carte_joueur(0,memoryShared->jeu_de_carte);
-    afficher_carte_joueur(1,memoryShared->jeu_de_carte);
-    remplir_tab_joueurs(memoryShared->joueurs);
-    afficher_tab_joueurs(memoryShared->joueurs);
+    //afficher_carte_joueur(0,memoryShared->jeu_de_carte);
+    //afficher_carte_joueur(1,memoryShared->jeu_de_carte);
+    //remplir_tab_joueurs(memoryShared->joueurs);
+    //afficher_tab_joueurs(memoryShared->joueurs);
 
     /**
      * Fin de la zone critique avec la fermeture du semaphore !
@@ -179,6 +179,7 @@ void * functionThreadPartie(void *pVoid) {
         printf("TAGEUL=%d\n",memoryShared->tageule);
 
         if(aQuiDeJouer==NB_JOUEURS){
+            //envoit un signal au joueur pour lui dire de demander la carte et jouer
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
             memoryShared->aQuiDeJouer=1; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
@@ -188,6 +189,8 @@ void * functionThreadPartie(void *pVoid) {
             memoryShared->aQuiDeJouer++; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
         }
+
+        printf("DEBUG TAGEULE : %d",memoryShared->tageule);
 
         detachSharedMemory(memoryShared);
         sem_post(semProtectSharedMemory);// Fin de zone critique

@@ -53,7 +53,7 @@ struct data_t{
     int aQuiDeJouer;
     int idProcessus[4];
     int PPID;
-    int tageule;
+    int tageule[1];
 } ;
 
 void sleep_perso(double seconde);
