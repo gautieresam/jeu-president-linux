@@ -23,7 +23,7 @@ pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
  * @param seconde
  */
 void sleep_perso(double seconde){
-    printf("function");
+    //printf("function");
     time_t time1, time2;
     time(&time1);
     time(&time2);
@@ -109,6 +109,7 @@ int main(){
      */
     memoryShared->aQuiDeJouer=1;
     memoryShared->tageule[0]=0;
+    memoryShared->tageule[1]=0;//nb de joueurs qui ont passé leur tour
 
 
     initalisation_du_jeu_de_carte(memoryShared->jeu_de_carte,memoryShared->partie);
@@ -176,8 +177,6 @@ void * functionThreadPartie(void *pVoid) {
         printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
 
-        printf("TAGEUL=%d\n",memoryShared->tageule);
-
         if(aQuiDeJouer==NB_JOUEURS){
             //envoit un signal au joueur pour lui dire de demander la carte et jouer
             kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
@@ -189,8 +188,6 @@ void * functionThreadPartie(void *pVoid) {
             memoryShared->aQuiDeJouer++; // Remise en place du joeur
             printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
         }
-
-        printf("DEBUG TAGEULE : %d",memoryShared->tageule);
 
         detachSharedMemory(memoryShared);
         sem_post(semProtectSharedMemory);// Fin de zone critique
