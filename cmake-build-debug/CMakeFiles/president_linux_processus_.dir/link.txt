@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/president_linux_processus_.dir/client.C.o CMakeFiles/president_linux_processus_.dir/deleteMemory.c.o CMakeFiles/president_linux_processus_.dir/gestion_jeu.c.o CMakeFiles/president_linux_processus_.dir/main.c.o CMakeFiles/president_linux_processus_.dir/master.c.o  -o president_linux_processus_ 
