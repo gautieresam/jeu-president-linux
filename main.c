@@ -1,6 +1,29 @@
 #include <sys/wait.h>
 #include "gestion_jeu.h"
 
+/**
+ * \fn void compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+ * \brief Compte le nombre de cartes du joueur en fonction de son identifiant !
+ * \param int <numJoueur
+ * \param int jeu_de_carte[TAILLE_JEU_DE_CARTE]
+ * \return
+ */
+int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    int taille_main = give_taille_de_la_main();
+    //printf("DEBUG : compterNombreDeCartesdUnJoueur, taille de la main %d\n",taille_main);
+    int debut=taille_main*numJoueur;
+    int fin=debut+taille_main;
+    int compterNbZero=0;
+    for (int i = debut; i < fin; i++){
+
+        if (jeu_de_carte[i]==0){
+            //Compte le nombre de 0
+            compterNbZero++;
+        }
+    }
+    //printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
+    return taille_main-compterNbZero;
+}
 
 void MONSIG(int num);
 
@@ -177,17 +200,29 @@ void * functionThreadPartie(void *pVoid) {
         printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
 
-        if(aQuiDeJouer==NB_JOUEURS){
-            //envoit un signal au joueur pour lui dire de demander la carte et jouer
-            kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
-            memoryShared->aQuiDeJouer=1; // Remise en place du joeur
-            printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
-        }else{
-            kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+        if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==24){
+            printf("Jeu finis, joueur %d a gagné (test à 22 cartes)",aQuiDeJouer);
+            //envoyer un signal de fin de jeu aux autres processus
+            for (int i = 1; i < NB_JOUEURS+1; i++) {
+                kill(memoryShared->idProcessus[i],SIGUSR2);
+                printf("SIGUSR2 envoyé à joueur %d",i);
+            }
+            //TODO : sortir du thread + TUER MEMOIRE PARTAGEE ET/OU SEMAPHORE
+        } else{
+            //sinon jouer en envoyant un signal au prochain joueur
+            if(aQuiDeJouer==NB_JOUEURS){
+                //envoit un signal au joueur pour lui dire de demander la carte et jouer
+                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+                memoryShared->aQuiDeJouer=1; // Remise en place du joeur
+                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+            }else{
+                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
 
-            memoryShared->aQuiDeJouer++; // Remise en place du joeur
-            printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+                memoryShared->aQuiDeJouer++; // Remise en place du joeur
+                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+            }
         }
+
 
         detachSharedMemory(memoryShared);
         sem_post(semProtectSharedMemory);// Fin de zone critique

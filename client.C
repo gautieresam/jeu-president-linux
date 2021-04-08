@@ -137,6 +137,20 @@ void MONSIG(int num){
             break;
         case SIGUSR2:
             printf("INFO SIGNAL : reception SIGUSR2\n");
+
+            memoryShared=getSharedMemory(1056); // Demande memoire partagée
+            semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1); // Declaration protection
+            sem_wait(semProtectSharedMemory); // Début zone critique
+
+            printf("\n\n\nFIN PARTIE : JOUEUR %d A GAGNE !!! \n\n\n",memoryShared->aQuiDeJouer);
+
+            sem_post(semProtectSharedMemory);// Fin de zone critique
+            detachSharedMemory(memoryShared);
+
+            exit(1);
+
+
+
             break;
 
         case SIGALRM:
@@ -177,8 +191,7 @@ void MONSIG(int num){
                 //remise à zéro du compteur de nombre de joueur qui passent leur tour
                 memoryShared->tageule[1]=0;
             }
-
-
+            
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
 
@@ -240,6 +253,7 @@ void * functionThreadPartie(void *pVoid){
     sigemptyset(&newact.sa_mask);
     sigaction(SIGUSR1,&newact,NULL);
     sigaction(SIGALRM,&newact,NULL);
+    sigaction(SIGUSR2,&newact,NULL);
 
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : Attente des informations du serveur ;\n");
@@ -541,7 +555,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
                 // Si on pose une carte au dessus d'une autre sachant qu'on ne joue pas un 2 ou un 1
                 // 1 3 4 5 6 7 8 9 10 11 12 13
-                if (last_card<carte && carte!=2 && carte!=1) {
+                if (last_card<carte && carte!=2 && carte!=1 && last_card!=1) {
                     printf("CASE 1.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
@@ -608,7 +622,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
                     // Si on pose une carte au dessus d'une autre sachant qu'on ne joue pas un 2 ou un 1
                     // 1 3 4 5 6 7 8 9 10 11 12 13
-                    if (last_card<carte && carte!=2 && carte!=1) {
+                    if (last_card<carte && carte!=2 && carte!=1 && last_card!=1) {
                         printf("CASE 2.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
@@ -682,7 +696,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
                     // Si on pose une carte au dessus d'une autre sachant qu'on ne joue pas un 2 ou un 1
                     // 1 3 4 5 6 7 8 9 10 11 12 13
-                    if (last_card<carte && carte!=2 && carte!=1) {
+                    if (last_card<carte && carte!=2 && carte!=1 && last_card!=1) {
                         printf("3.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
