@@ -103,6 +103,7 @@ int main(){
     sigemptyset(&newact.sa_mask);
     sigaction(SIGUSR1,&newact,NULL);
     sigaction(SIGALRM,&newact,NULL);
+    int shmid;
 
     /**
     * \brief Creation de la memoire partagé qui est une structure data_t
@@ -177,6 +178,15 @@ int main(){
      */
     pthread_join(threadPartie, &ret);
 
+    sem_wait(semProtectSharedMemory);
+    shmid = shmget((key_t)CLE, 0, 0);
+    shmctl(shmid, IPC_RMID, 0);
+    sem_post(semProtectSharedMemory);
+    sem_destroy(semProtectSharedMemory);
+    printf("Semaphore et memoire partagée supprimé !\n\n");
+
+    printf("===>Fin de la partie, fin du serveur\n Au revoir !\n");
+
     return 0;
 }
 
@@ -188,11 +198,12 @@ int main(){
 */
 void * functionThreadPartie(void *pVoid) {
 
+    int finPartie=0;
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
     struct data_t *memoryShared;
 
-    while (1){
+    while (finPartie==0){
 
         memoryShared=getSharedMemory(1056); // Demande memoire partagée
         semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
@@ -200,14 +211,16 @@ void * functionThreadPartie(void *pVoid) {
         printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
 
-        if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==24){
+        //TODO : modifier avec un 0 à la place du 24
+        if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==22){
             printf("Jeu finis, joueur %d a gagné (test à 22 cartes)",aQuiDeJouer);
             //envoyer un signal de fin de jeu aux autres processus
             for (int i = 1; i < NB_JOUEURS+1; i++) {
                 kill(memoryShared->idProcessus[i],SIGUSR2);
                 printf("SIGUSR2 envoyé à joueur %d",i);
             }
-            //TODO : sortir du thread + TUER MEMOIRE PARTAGEE ET/OU SEMAPHORE
+            //mettre flag de la fin de partie à 1, pour sortir de la boucle while
+            finPartie=1;
         } else{
             //sinon jouer en envoyant un signal au prochain joueur
             if(aQuiDeJouer==NB_JOUEURS){

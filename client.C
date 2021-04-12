@@ -77,12 +77,15 @@ void afficherLaGame(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
         if (jeu_de_carte[i]==11){
             printf("Valet ");
-        } else if (jeu_de_carte[i]== 12){
+        }else if (jeu_de_carte[i]== 12){
             printf("Dame ");
         }else if (jeu_de_carte[i]== 13){
             printf("Roi ");
-        }else{
+        }else if (jeu_de_carte[i]!=-1){
             printf("%d ",jeu_de_carte[i]);
+        }else if (i==0 && jeu_de_carte[-1]){
+            //aucune carte encore posée
+            printf(" - \n");
         }
     }
     printf("\n");
@@ -115,22 +118,20 @@ void MONSIG(int num){
             sem_wait(semProtectSharedMemory); // Début zone critique
             //TODO : enlever le commenatire de clear pour gérer l'affichage pour mieux voir
             //system("clear");
-            printf("A ton tour de jouer !! Voici la partie : \n");
-
+            printf("A TOI DE JOUER ! \n\nVoici la partie : \n");
             afficherLaGame(memoryShared->partie);// Afficher le jeu
-            printf("INFO : afficher les cartes du joueur");
 
-
+            printf("\nVoici tes cartes :\n");
             afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
 
-            int nbCartesJoueurs;
-            nbCartesJoueurs=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);
-
+           /* int nbCartesJoueurs;
+            nbCartesJoueurs=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);*/
 
             sem_post(semProtectSharedMemory);// Fin de zone critique
             detachSharedMemory(memoryShared);
 
-            printf("USER : entre ta carte :");
+            fflush(stdin);
+            printf("\nTu as 3 secondes pour jouer ta carte : ");
             scanf("%d",&carteQueUtilisateurVeutJouer);
             alarm(3);
 
@@ -149,8 +150,6 @@ void MONSIG(int num){
 
             exit(1);
 
-
-
             break;
 
         case SIGALRM:
@@ -162,7 +161,12 @@ void MONSIG(int num){
              */
             //printf("INFO SIGNAL : reception alarme\n");
             //printf("INFO : la carte à tester est %d\n",carteQueUtilisateurVeutJouer);
-            printf("\n\nLa carte %d va être jouée\n\n",carteQueUtilisateurVeutJouer);
+
+            if (carteQueUtilisateurVeutJouer==-10){
+                printf("Trop tard temps écoulé ! Tu vas passer ton tour\n");
+            } else{
+                printf("\nLa carte %d va être jouée\n\n",carteQueUtilisateurVeutJouer);
+            }
 
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",0,0666,1); // Declaration protection
@@ -330,7 +334,6 @@ void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int taille_main = give_taille_de_la_main();
     int debut=taille_main*numJoueur;
     int fin=debut+taille_main;
-    printf("\n");
     for (int i = debut; i < fin; i++){
         if (jeu_de_carte[i]==11){
             printf("Valet(11) ");
