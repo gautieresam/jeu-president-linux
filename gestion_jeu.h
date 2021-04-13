@@ -56,6 +56,7 @@ struct data_t{
     int tageule[1];
 } ;
 
+
 void sleep_perso(double seconde);
 void *functionThreadMaitre() ;
 void * functionThreadPartie(void *pVoid) ;
@@ -66,8 +67,4 @@ void initalisation_du_jeu_de_carte(int tab[TAILLE_JEU_DE_CARTE],int partie[TAILL
 void afficher_tab(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 void melanger_cartes(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
 int give_taille_de_la_main();
-int indice_partie(int partie[TAILLE_JEU_DE_CARTE]);
-int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
-void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
-void afficher_tab_joueurs(int joueurs[2][NB_JOUEURS]);
-void remplir_tab_joueurs(int joueurs[2][NB_JOUEURS]);
+int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);

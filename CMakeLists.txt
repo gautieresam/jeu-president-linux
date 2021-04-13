@@ -10,7 +10,6 @@ add_executable(president_linux_processus_
         deleteMemory.c
         gestion_jeu.c
         gestion_jeu.h
-        libClient.h
         main.c
         master.c
         )

@@ -69,6 +69,22 @@ void deleteSharedMemory(int cle){
     }
 }
 
+/**
+ * \fn void sleep_perso(double seconde)
+ * \brief Fonction d'attente maison !
+ * @param seconde
+ */
+void sleep_perso(double seconde){
+    //printf("function");
+    time_t time1, time2;
+    time(&time1);
+    time(&time2);
+
+    while (difftime(time2,time1)<seconde){
+        time(&time2);
+    }
+}
+
 
 /**
  * \fn void Initalisation_du_jeu_de_carte(int tab[52])
@@ -142,60 +158,26 @@ int give_taille_de_la_main(){
     return taille;
 }
 
-void afficher_carte_joueur(int numJoueur, int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+/**
+ * \fn void compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
+ * \brief Compte le nombre de cartes du joueur en fonction de son identifiant !
+ * \param int <numJoueur
+ * \param int jeu_de_carte[TAILLE_JEU_DE_CARTE]
+ * \return
+ */
+int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int taille_main = give_taille_de_la_main();
+    //printf("DEBUG : compterNombreDeCartesdUnJoueur, taille de la main %d\n",taille_main);
     int debut=taille_main*numJoueur;
     int fin=debut+taille_main;
-
-    printf("\nJeu du joueur %d : ",numJoueur);
+    int compterNbZero=0;
     for (int i = debut; i < fin; i++){
-        if (jeu_de_carte[i]==11){
-            printf("Valet - ");
-        } else if (jeu_de_carte[i]== 12){
-            printf("Dame - ");
-        }else if (jeu_de_carte[i]== 13){
-            printf("Roi - ");
-        }else if (jeu_de_carte[i]!=0){
-            //n'affiche pas les 0 (car signifie qu'il n'y a pas de carte
-            printf("%d - ",jeu_de_carte[i]);
+
+        if (jeu_de_carte[i]==0){
+            //Compte le nombre de 0
+            compterNbZero++;
         }
     }
-
+    //printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
+    return taille_main-compterNbZero;
 }
-
-int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
-	int flag=0, i=0;
-	while(flag==0 && i<(TAILLE_JEU_DE_CARTE-1)){
-			if(partie[i]==0){
-				flag=1;
-				return i;
-			}
-			i++;
-		}
-	return -1;
-}
-
-int get_derniere_carte(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
-    int i=0;
-
-    while (jeu_de_carte[i]!=0){
-        i++;
-    }
-        return jeu_de_carte[i-1];
-}
-
-void remplir_tab_joueurs(int joueurs[][NB_JOUEURS]){
-    for (int i = 0; i < NB_JOUEURS; i++) {
-        joueurs[1][i]=i+1;
-        joueurs[2][i]=1;//actif par défaut
-    }
-}
-
-void afficher_tab_joueurs(int joueurs[2][NB_JOUEURS]){
-    printf("\nJOUEURS :\n");
-    for (int i = 0; i < NB_JOUEURS; i++){
-            printf("ordre : %d | NumJ : %d | Actif : %d \n",i,joueurs[1][i],joueurs[2][i]);
-        }
-}
-
-

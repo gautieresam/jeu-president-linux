@@ -1,29 +1,7 @@
 #include <sys/wait.h>
 #include "gestion_jeu.h"
 
-/**
- * \fn void compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
- * \brief Compte le nombre de cartes du joueur en fonction de son identifiant !
- * \param int <numJoueur
- * \param int jeu_de_carte[TAILLE_JEU_DE_CARTE]
- * \return
- */
-int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
-    int taille_main = give_taille_de_la_main();
-    //printf("DEBUG : compterNombreDeCartesdUnJoueur, taille de la main %d\n",taille_main);
-    int debut=taille_main*numJoueur;
-    int fin=debut+taille_main;
-    int compterNbZero=0;
-    for (int i = debut; i < fin; i++){
 
-        if (jeu_de_carte[i]==0){
-            //Compte le nombre de 0
-            compterNbZero++;
-        }
-    }
-    //printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
-    return taille_main-compterNbZero;
-}
 
 void MONSIG(int num);
 
@@ -39,22 +17,6 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
  */
 pthread_mutex_t unMutex = PTHREAD_MUTEX_INITIALIZER;
 
-
-/**
- * \fn void sleep_perso(double seconde)
- * \brief Fonction d'attente maison !
- * @param seconde
- */
-void sleep_perso(double seconde){
-    //printf("function");
-    time_t time1, time2;
-    time(&time1);
-    time(&time2);
-
-    while (difftime(time2,time1)<seconde){
-        time(&time2);
-    }
-}
 
 /**
  * \fn int kill(pid_t pid, int sig);
@@ -140,10 +102,7 @@ int main(){
     afficher_tab(memoryShared->jeu_de_carte);
     melanger_cartes(memoryShared->jeu_de_carte);
     afficher_tab(memoryShared->jeu_de_carte);
-    //afficher_carte_joueur(0,memoryShared->jeu_de_carte);
-    //afficher_carte_joueur(1,memoryShared->jeu_de_carte);
-    //remplir_tab_joueurs(memoryShared->joueurs);
-    //afficher_tab_joueurs(memoryShared->joueurs);
+
 
     /**
      * Fin de la zone critique avec la fermeture du semaphore !
@@ -212,7 +171,7 @@ void * functionThreadPartie(void *pVoid) {
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
 
         //TODO : modifier avec un 0 à la place du 24
-        if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==22){
+        /*if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==0){
             printf("Jeu finis, joueur %d a gagné (test à 22 cartes)",aQuiDeJouer);
             //envoyer un signal de fin de jeu aux autres processus
             for (int i = 1; i < NB_JOUEURS+1; i++) {
@@ -234,13 +193,41 @@ void * functionThreadPartie(void *pVoid) {
                 memoryShared->aQuiDeJouer++; // Remise en place du joeur
                 printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
             }
+        }*/
+
+            //sinon jouer en envoyant un signal au prochain joueur
+            if(aQuiDeJouer==NB_JOUEURS){
+                //envoit un signal au joueur pour lui dire de demander la carte et jouer
+                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+                memoryShared->aQuiDeJouer=1; // Remise en place du joeur
+                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+            }else{
+                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
+
+                memoryShared->aQuiDeJouer++; // Remise en place du joeur
+                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
+            }
+
+            //regarder si le joueur a finit
+        if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==0) {
+            printf("Jeu finis, joueur %d a gagné (test à 22 cartes)", aQuiDeJouer);
+            //envoyer un signal de fin de jeu aux autres processus
+            for (int i = 1; i < NB_JOUEURS + 1; i++) {
+                kill(memoryShared->idProcessus[i], SIGUSR2);
+                printf("SIGUSR2 envoyé à joueur %d", i);
+            }
+            //mettre flag de la fin de partie à 1, pour sortir de la boucle while
+            finPartie = 1;
         }
+
+
 
 
         detachSharedMemory(memoryShared);
         sem_post(semProtectSharedMemory);// Fin de zone critique
 
         printf("INFO : ping 10 seconde\n");
+        //TODO : voir pour changer le 7
         sleep_perso(7);
 
     }

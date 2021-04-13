@@ -1,4 +1,4 @@
-#include "libClient.h"
+#include "gestion_jeu.h"
 
 /**
  * Declaration des prototypes en début du fichier.
@@ -18,12 +18,8 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]);
  * */
 int id=0;
 int carteQueUtilisateurVeutJouer=-10;
+int premier_tour=0;
 
-/**
- * \fn sem_t *semProtectSharedMemory;
- * \brief Declaration du semaphore pour l'espace de memoire partagée
- */
-sem_t *semProtectSharedMemory;
 
 /**
  * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -73,6 +69,7 @@ void detachSharedMemory(struct data_t *memoryShared){
  * \return pas de return
  */
 void afficherLaGame(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
+    printf("--------------------------------------------------------------\n");
 
     for (int i = 0; i < TAILLE_JEU_DE_CARTE; i++){
         if (jeu_de_carte[i]==11){
@@ -88,7 +85,7 @@ void afficherLaGame(int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
             printf(" - \n");
         }
     }
-    printf("\n");
+    printf("\n--------------------------------------------------------------\n");
 }
 
 /**
@@ -121,8 +118,13 @@ void MONSIG(int num){
             printf("A TOI DE JOUER ! \n\nVoici la partie : \n");
             afficherLaGame(memoryShared->partie);// Afficher le jeu
 
-            printf("\nVoici tes cartes :\n");
-            afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
+            if(premier_tour==0){
+                printf("\nVoici tes cartes :\n");
+                afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
+                premier_tour=1;
+            }
+
+
 
            /* int nbCartesJoueurs;
             nbCartesJoueurs=compterNombreDeCartesdUnJoueur(id-1,memoryShared->jeu_de_carte);*/
@@ -133,6 +135,7 @@ void MONSIG(int num){
             fflush(stdin);
             printf("\nTu as 3 secondes pour jouer ta carte : ");
             scanf("%d",&carteQueUtilisateurVeutJouer);
+            //TODO : voir pour changer le 3s
             alarm(3);
 
             break;
@@ -195,7 +198,13 @@ void MONSIG(int num){
                 //remise à zéro du compteur de nombre de joueur qui passent leur tour
                 memoryShared->tageule[1]=0;
             }
-            
+
+            //afficher les cartes du joueur qu'il puisse les voir pour le tour suivant :
+            //TODO : voir si on garde ou pas
+            system("clear");
+            afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
+
+
             detachSharedMemory(memoryShared);
             sem_post(semProtectSharedMemory);// Fin de zone critique
 
@@ -334,6 +343,9 @@ void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
     int taille_main = give_taille_de_la_main();
     int debut=taille_main*numJoueur;
     int fin=debut+taille_main;
+
+    printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+
     for (int i = debut; i < fin; i++){
         if (jeu_de_carte[i]==11){
             printf("Valet(11) ");
@@ -347,7 +359,7 @@ void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
         }
     }
     printf("Passe son tour(0) ");
-    printf("\n");
+    printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 }
 
 
@@ -437,7 +449,6 @@ int indice_partie(int partie[TAILLE_JEU_DE_CARTE]){
 int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
 
     int nbCartesIdentiques=-1;
-    int indice=-1, flag=0,last_card=-9,carte_ok=0;
     int indiceP=indice_partie(partie);
 
     //printf("--INFO getNombreDeCarteIdentiqueAlaSuite  \n");
@@ -467,7 +478,7 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
         }
 
     //Si on pose la troisieme carte du jeu il peut y avoir 3 cartes identiques !
-    }else{
+    }else if(indiceP==3){
 
         // Si il y a 3 cartes identiques avant !
         if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]==partie[indiceP-3] && partie[indiceP-1]==partie[indiceP-3]){
@@ -485,6 +496,27 @@ int getNombreDeCarteIdentiqueAlaSuite(int partie [(TAILLE_JEU_DE_CARTE)]){
             nbCartesIdentiques = 1;
         }
 
+    } else{
+        //sinon il peut en avoir jusque 4
+        if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]==partie[indiceP-3] && partie[indiceP-3]==partie[indiceP-4]){
+            printf("---Il y a 3 cartes identiques avant ! #3\n");
+            nbCartesIdentiques = 4;
+        }
+        else if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]==partie[indiceP-3] && partie[indiceP-1]==partie[indiceP-3]){
+            // Si il y a 3 cartes identiques avant !
+            printf("---Il y a 3 cartes identiques avant ! #3\n");
+            nbCartesIdentiques = 3;
+
+            // Si il y a 2 cartes identiques avant !
+        }else if(partie[indiceP-1]==partie[indiceP-2] && partie[indiceP-2]!=partie[indiceP-3] ){
+            printf("---Il y a 2 cartes identiques avant ! #3\n");
+            nbCartesIdentiques = 2;
+
+            // Il y a donc 1 carte
+        }else{
+            printf("-------Il y a 1 carte avant ! #3\n");
+            nbCartesIdentiques = 1;
+        }
     }
 
 
@@ -513,7 +545,7 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
     printf("INFO : indice=%d carteAJouer=%d tageule=%d\n", indiceP, carteQueUtilisateurVeutJouer,tageule[0]);
 
-    afficherLaGame(partie);
+   // afficherLaGame(partie);
 
     int nbCArtesIdentiques = getNombreDeCarteIdentiqueAlaSuite(partie);
     printf("DEBUG : Nombre de carte identique %d\n",nbCArtesIdentiques);
@@ -523,7 +555,8 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
      * Si la carte est égale à -0, le joueur n'a pas joué assez vite (passe son tour)
      */
     if (carte == -10 || carte==0) {
-        printf("CASE 0.1 : INFO : joueur %d passe son tour \n", numJoueur);
+        //printf("CASE 0.1 : INFO : joueur %d passe son tour \n", numJoueur);
+        printf("Tu passes ton tour\n");
         //Quand un joueur passe son tour, le tageule est baissé
         tageule[0]=0;
         return -1;
@@ -541,25 +574,28 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
 
         //Si la carte n'est pas dans le jeu => passe son tour
         if (flag == 0) {
-            printf("CASE 0.2 : INFO : la carte à jouer %d n'est pas dans le jeu du joueur\n", carte);
+            //printf("CASE 0.2 : INFO : la carte à jouer %d n'est pas dans le jeu du joueur\n", carte);
+            printf("Tu n'as pas cette carte dans ton jeu, tu passes ton tour\n");
             //Quand un joueur passe son tour, le tageule est baissé
             tageule[0]=0;
             return -1;
         } else {
             //la carte est dans le jeu
             last_card = get_derniere_carte(partie);
+            //printf("\n=================>DEBUG tageule et nb joueur : %d\n",tageule[1]);
 
             //CAS où tout les joueurs ont déjà passé leur tour <=> joue ce que l'on veut tant que la carte est dans le jeu
             //>= car si la carte n'existe pas dans le jeu, le compteur aura dépassé le NBJOUEUR
             if (tageule[1]>=NB_JOUEURS){
-                printf("===> TOUS LES JOUEURS ONT DEJA PASSE LEUR TOUR, JOUER CARTE DU JEU QUE L'ON VEUT");
+                printf("Tu as recommencés une série, ta carte a été jouée\n");
                 partie[indiceP] = carte;
                 jeu_de_carte[indice] = 0;
                 return 0;
             }else if (nbCArtesIdentiques == 1) {
                 // Si le nombre de carte égal à 1 on doit poser une carte équivalente ou supérieur (cas où la carte n'est posée n'est ni un 2 ni un as)
                 if (last_card<carte && carte!=2 && carte!=1 && last_card!=1) {
-                    printf("CASE 1.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                    //printf("CASE 1.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                    printf("Ta carte a été jouée\n");
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
                     return 0;
@@ -567,36 +603,40 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     // Si on pose une carte identique à la precedente (cas où la carte n'est pas un 2)
                     // Il faut lever le tageule : car 2 cartes identiques à la suite pour le rpochain joueur
                     tageule[0]=1;
-                    printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
-                    printf("CASE 1.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                    //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                    //printf("CASE 1.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                    printf("Ta carte a été jouée, tu as levé le TG\n");
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
                     return 0;
                 }else if(carte==2){
                     // Si l'utilisateur pose un 2 : carte jouée dans tout les cas et le joueur rejoue
-                    printf("CASE 1.3 INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
+                    //printf("CASE 1.3 INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
-                    printf("2 posé, série fermée");
+                    printf("Tu as 2 posé, série fermée, à toi de rejouer !\n");
                     //renvoi 1 pour dire de faire rejouer le joueur
                     return 1;
 
                 }else if(carte==1 && last_card!=1){
                     //jouer un AS, toujours possible (sauf au dessus d'un 2, mais le cas du 2 est géré ailleurs)
-                    printf("CASE 1.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                    //printf("CASE 1.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                    printf("Ta carte a été jouée\n");
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
                     return 0;
                 }else if(carte==1 && last_card==1){
                     //jouer un as au dessu d'un as = lever le TG
                     tageule[0]=1;
-                    printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
-                    printf("CASE 1.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                    //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                    //printf("CASE 1.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                    printf("Ta carte a été jouée, tu as levé le TG\n");
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
                     return 0;
                 }else{
-                    printf("CASE 1.4 : La carte n'est pas bonne, passe ton tour #3");
+                    //printf("CASE 1.4 : La carte n'est pas bonne, passe ton tour #3");
+                    printf("Tu ne peux pas jouer ta carte, tu passes ton tour\n");
                     //autre cas, la carte ne sera pas bonne
                     // si le joueur passe son tour, ça signifie que dans tout les cas, le tageule est baissé
                     tageule[0]=0;
@@ -606,7 +646,8 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
             } else if (nbCArtesIdentiques == 2) {
                 // Il y a 2 cartes identiques l'utilisateur doit obligatoirement poser la même carte si le tageule est à 1 !
                 if (last_card==carte && tageule[0]==1) {
-                    printf("CASE 2.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #4\n", carte, last_card);
+                    //printf("CASE 2.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #4\n", carte, last_card);
+                    printf("Ta carte a été jouée, le TG reste levé\n");
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
                     return 0;
@@ -616,7 +657,8 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     // Si on pose une carte au dessus d'une autre sachant qu'on ne joue pas un 2 ou un 1
                     // 1 3 4 5 6 7 8 9 10 11 12 13
                     if (last_card<carte && carte!=2 && carte!=1 && last_card!=1) {
-                        printf("CASE 2.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        //printf("CASE 2.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        printf("Ta carte a été jouée\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
                         return 0;
@@ -624,46 +666,49 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     } else if(last_card==carte && carte!=2 && carte!=1){
                         // Il faut lever le tageule ! pour le prochain joueur
                         tageule[0]=1;
-                        printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
-
-                        printf("CASE 2.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        printf("Ta carte a été jouée, tu as levé le TG\n");
+                        //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                        //printf("CASE 2.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
                         return 0;
 
                     }else if (carte==1 && last_card!=1){
-                        printf("CASE 2.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        //printf("CASE 2.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        printf("Ta carte a été jouée\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
                         return 0;
                     }else if (carte==1 && last_card==1){
                         // Il faut lever le tageule ! pour le prochain joueur
                         tageule[0]=1;
-                        printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
-
-                        printf("CASE 2.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                        //printf("CASE 2.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        printf("Ta carte a été jouée, tu as levé le TG\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
                         return 0;
                     }else if(carte==2 ){
-                        printf("CASE 2.4 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
+                        //printf("CASE 2.4 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
-
-                        printf("2 posé, série fermée");
+                        printf("Tu as 2 posé, série fermée, à toi de rejouer !\n");
+                        //printf("2 posé, série fermée");
                         //renvoi 1 pour dire de faire rejouer le joueur
                         return 1;
 
                     }else{
-                        printf("2.5 : INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                        //printf("2.5 : INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                        printf("Tu ne peux pas jouer ta carte, tu passes ton tour\n");
                         return -1;
                     }
 
                 // Sinon, ce que la carte ne peut pas être jouée (carte != derneir carte alors que le tageule est levé)
                 }else {
-                    printf("CASE 2.6 : INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                    //printf("CASE 2.6 : INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
                     tageule[0]=0;//baisser le tageule
-                    printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                    //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                    printf("Tu ne peux pas jouer ta carte, tu passes ton tour\n");
                     return -1;
                 }
             // Il y a 3 cartes identiques l'utilisateur
@@ -671,12 +716,13 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                 // Il y a 2 cartes identiques l'utilisateur doit obligatoirement poser la même carte si le tageule est à 1 !
                 // Il va recuperer la main !
                 if (last_card == carte && tageule[0]==1) {
-                    printf("CASE 3.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #7\n", carte, last_card);
+                    //printf("CASE 3.1 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #7\n", carte, last_card);
                     partie[indiceP] = carte;
                     jeu_de_carte[indice] = 0;
 
-                    printf("FERMETURE DU JEU : 2 , rejouer\n");
-                    printf("MODIFICATION JOUEUR SUIVANT\n");
+                    //printf("FERMETURE DU JEU : carré , rejouer\n");
+                    //printf("MODIFICATION JOUEUR SUIVANT\n");
+                    printf("Tu as fermé un carré, série fermée, à toi de rejouer !\n");
                     //renvoi 1 pour dire de faire rejouer le joueur
                     return 1;
 
@@ -686,41 +732,46 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                     // Si on pose une carte au dessus d'une autre sachant qu'on ne joue pas un 2 ou un 1
                     // 1 3 4 5 6 7 8 9 10 11 12 13
                     if (last_card<carte && carte!=2 && carte!=1 && last_card!=1) {
-                        printf("3.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        //printf("3.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        printf("Ta carte a été jouée\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
                         return 0;
 
                         // Si on pose une carte identique à la precedente et différente de 2
                     } else if(last_card==carte && carte!=2 && carte !=1){
-                        printf("3.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        //printf("3.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        printf("Tu as fermé un carré, série fermée, à toi de rejouer !\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
 
                         tageule[0]=0;
-                        printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                       // printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
 
-                        printf("FERMETURE CARRE, rejouer\n");
+                        //printf("FERMETURE CARRE, rejouer\n");
                         //renvoi 1 pour dire de faire rejouer le joueur
                         return 1;
                     }else if (carte==1 && last_card!=1){
-                        printf("3.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        //printf("3.2 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #0\n", carte, last_card);
+                        printf("Ta carte a été jouée\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
                         return 0;
                     }else if (carte==1 && last_card==1){
-                        printf("3.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        //printf("3.3 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d on leve le tageule=%d #1\n", carte, last_card,tageule[0]);
+                        printf("Tu as fermé un carré, série fermée, à toi de rejouer !\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
 
                         tageule[0]=0;
-                        printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                        //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
 
-                        printf("FERMETURE CARRE, rejouer\n");
+                        //printf("FERMETURE CARRE, rejouer\n");
                         //renvoi 1 pour dire de faire rejouer le joueur
                         return 1;
                     }else if(carte==2 ){
-                        printf("3.4 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
+                        //printf("3.4 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
+                        printf("Ta carte a été jouée\n");
                         partie[indiceP] = carte;
                         jeu_de_carte[indice] = 0;
 
@@ -728,19 +779,29 @@ int jouer_une_carte(int numJoueur, int carte, int jeu_de_carte[(TAILLE_JEU_DE_CA
                         return 1;
 
                     }else{
-                        printf("3.5 : INFO : bonne carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
+                        //printf("3.5 : INFO : mauvaise carte, carte à jouer %d, la carte d'avant %d #2\n", carte, last_card);
+                        printf("Tu ne peux pas jouer ta carte, tu passes ton tour\n");
                         return 0;
                     }
                 } else{
-                    printf("3.6 : INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
+                    //printf("3.6 : INFO :  mauvaise carte ,carte à jouer %d, la carte d'avant %d #6\n", carte, last_card);
                     tageule[0]=0;//baisser le tageule
-                    printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                    //printf("Voici la nouvelle valeur du tageule : %d",tageule[0]);
+                    printf("Tu ne peux pas jouer ta carte, tu passes ton tour\n");
                     return -1;
                 }
 
+            }else if (nbCArtesIdentiques == 4) {
+                //printf("===> Un carré a été fermé, ouer la carte que l'on veut");
+                printf("Ta carte a été jouée\n");
+                partie[indiceP] = carte;
+                jeu_de_carte[indice] = 0;
+
+                return 0;
             } else {
-                printf("==>Il y a un pb mdr ! \n");
+                    printf("==>Il y a un pb mdr ! \n");
             }
+
         }
     }
 }
