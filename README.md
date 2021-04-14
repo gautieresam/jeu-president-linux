@@ -1,7 +1,7 @@
 # president-linux-processus-
 
 
-# Comment compiler ? 
+## Comment compiler ? 
 
 Il faut utiliser la commande Make 
 
