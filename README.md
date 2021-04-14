@@ -15,4 +15,3 @@ Nous avons déposé sur votre drive un diaporama qui explique les rêgles
 https://docs.google.com/presentation/d/1O3rvtm5myppeVxDMuuivvZER_8mwOIdeVDPbRXCet0U/edit?usp=sharing 
 
 ## Si vous souhaitez voir une partie nous avons réalisé une vidéo dispo sur votre drive dans notre répertoire
-
