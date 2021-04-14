@@ -1,5 +1,6 @@
 # president-linux-processus-
 
+Projet LA1 le jeu de président avec des echanges interprocessus
 
 ## Comment compiler ? 
 
