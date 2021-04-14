@@ -171,7 +171,6 @@ void * functionThreadPartie(void *pVoid) {
         printf("DEBUG : a qui de jouer ? %d\n",memoryShared->aQuiDeJouer);
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
 
-        //TODO : modifier avec un 0 à la place du 24
         if (compterNombreDeCartesdUnJoueur(joueur_precedent-1,memoryShared->jeu_de_carte)==0){
             printf("Jeu finis, joueur %d a gagné (test à 22 cartes)",aQuiDeJouer);
             //envoyer un signal de fin de jeu aux autres processus

@@ -20,6 +20,29 @@ int id=0;
 int carteQueUtilisateurVeutJouer=-10;
 int premier_tour=0;
 
+char texteSaisi[10] = {0};
+////////////////////////////////////TEST PROF
+int fonctionFils()
+{
+    //char texteSaisi[10] = {0};
+    char *positionEnter = NULL;
+
+    printf("Saisissez votre texte : ");
+    fgets(texteSaisi, 20, stdin);
+    positionEnter = strchr(texteSaisi, '\n');
+    if (positionEnter != NULL) {
+        *positionEnter = '\0';
+    } else {
+        int c = 0;
+        while (c != '\n' && c != EOF) {
+            c = getchar();
+        }
+    }
+    int l=atoi(texteSaisi);
+    return(l);
+}
+
+/////////////////////////////////////////////////
 
 /**
  * \fn pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -113,8 +136,6 @@ void MONSIG(int num){
             memoryShared=getSharedMemory(1056); // Demande memoire partagée
             semProtectSharedMemory=sem_open("/TEST.SEMAPHORE",O_CREAT | O_RDWR,0666,1); // Declaration protection
             sem_wait(semProtectSharedMemory); // Début zone critique
-            //TODO : enlever le commenatire de clear pour gérer l'affichage pour mieux voir
-            //system("clear");
             printf("A TOI DE JOUER ! \n\nVoici la partie : \n");
             afficherLaGame(memoryShared->partie);// Afficher le jeu
 
@@ -132,11 +153,14 @@ void MONSIG(int num){
             sem_post(semProtectSharedMemory);// Fin de zone critique
             detachSharedMemory(memoryShared);
 
-            fflush(stdin);
+            //TODO : changement avec test du code de la prof
+            //fflush(stdin);
             printf("\nTu as 3 secondes pour jouer ta carte : ");
-            scanf("%d",&carteQueUtilisateurVeutJouer);
-            //TODO : voir pour changer le 3s
             alarm(3);
+            //scanf("%d",&carteQueUtilisateurVeutJouer);
+            carteQueUtilisateurVeutJouer=fonctionFils();
+            //TODO : voir pour changer le 3s
+           // alarm(3);
 
             break;
         case SIGUSR2:
@@ -200,7 +224,6 @@ void MONSIG(int num){
             }
 
             //afficher les cartes du joueur qu'il puisse les voir pour le tour suivant :
-            //TODO : voir si on garde ou pas
             system("clear");
             afficher_carte_joueur(id-1,memoryShared->jeu_de_carte); // Afficher les cartes du joueur
 
