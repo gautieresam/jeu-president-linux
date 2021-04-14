@@ -157,7 +157,6 @@ int give_taille_de_la_main(){
     int taille = TAILLE_JEU_DE_CARTE/NB_JOUEURS;
     return taille;
 }
-
 /**
  * \fn void compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
  * \brief Compte le nombre de cartes du joueur en fonction de son identifiant !

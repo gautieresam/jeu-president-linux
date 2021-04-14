@@ -363,9 +363,6 @@ void afficher_carte_joueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]){
 }
 
 
-
-
-
 /**
  * \fn void compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_CARTE]);
  * \brief Compte le nombre de cartes du joueur en fonction de son identifiant !
@@ -389,7 +386,6 @@ int compterNombreDeCartesdUnJoueur(int numJoueur,int jeu_de_carte[TAILLE_JEU_DE_
     //printf("Il reste %d cartes dans la main du joueur ! \n",taille_main-compterNbZero);
     return taille_main-compterNbZero;
 }
-
 
 
 /**
