@@ -17,5 +17,8 @@ https://docs.google.com/presentation/d/1O3rvtm5myppeVxDMuuivvZER_8mwOIdeVDPbRXCe
 ## Si vous souhaitez voir une partie nous avons réalisé une vidéo dispo sur votre drive dans notre répertoire
 
 # Erreur mémoire 
+Il faut supprimer le segment de mémoire partagée avec ./clean à pour clé 1056 
 
-Il faut supprimer le segment de mémoire partagée avec ./clean 
+# Rapport de bug 
+Comme évoqué sur discord nous avons essayé de corriger le problème si un utilisateur ne rentre pas sa carte dans un scanf il y a des problèmes d'affichage. Nous avons adapté le morceau de code que vous nous avez donné. Il permet de garder un affichage presque propre dans le terminal. 
+
