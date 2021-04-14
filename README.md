@@ -4,11 +4,13 @@ Projet LA1 le jeu de président avec des echanges interprocessus
 
 ## Comment compiler ? 
 
-Il faut utiliser la commande dans un terminal linux make 
+Il faut utiliser la commande dans un terminal linux make dans l'arborescence du fichier
 
 Cette commande va produire l'excutable serveur et client
 
+## Comment lancer une partie ? 
 
+Il faut ouvrir 3 terminaux, le premier pour lancer le serveur avec la commande ./server et les 2 autres pour lancer le client avec ./client
 
 
 # Architecture 
