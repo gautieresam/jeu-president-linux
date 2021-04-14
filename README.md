@@ -1,12 +1,14 @@
 # president-linux-processus-
 
 
+# Comment compiler ? 
+
+Il faut utiliser la commande Make 
+
+
 
 
 # Architecture 
-
-
-# Fonctionnement de la relation client serveur 
 
 1. Le serveur créer une memoire partagée pour les clients
 
