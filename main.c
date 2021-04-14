@@ -161,6 +161,7 @@ void * functionThreadPartie(void *pVoid) {
     pthread_cond_wait(&cond,&unMutex);
     printf("INFO : declenchement de la partie\n");
     struct data_t *memoryShared;
+    int joueur_precedent=1;
 
     while (finPartie==0){
 
@@ -171,7 +172,7 @@ void * functionThreadPartie(void *pVoid) {
         int aQuiDeJouer=memoryShared->aQuiDeJouer;
 
         //TODO : modifier avec un 0 à la place du 24
-        /*if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==0){
+        if (compterNombreDeCartesdUnJoueur(joueur_precedent-1,memoryShared->jeu_de_carte)==0){
             printf("Jeu finis, joueur %d a gagné (test à 22 cartes)",aQuiDeJouer);
             //envoyer un signal de fin de jeu aux autres processus
             for (int i = 1; i < NB_JOUEURS+1; i++) {
@@ -193,35 +194,10 @@ void * functionThreadPartie(void *pVoid) {
                 memoryShared->aQuiDeJouer++; // Remise en place du joeur
                 printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
             }
-        }*/
-
-            //sinon jouer en envoyant un signal au prochain joueur
-            if(aQuiDeJouer==NB_JOUEURS){
-                //envoit un signal au joueur pour lui dire de demander la carte et jouer
-                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
-                memoryShared->aQuiDeJouer=1; // Remise en place du joeur
-                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
-            }else{
-                kill(memoryShared->idProcessus[aQuiDeJouer],SIGUSR1);
-
-                memoryShared->aQuiDeJouer++; // Remise en place du joeur
-                printf("DEBUG : joueur suivant  %d\n",memoryShared->aQuiDeJouer);
-            }
-
-            //regarder si le joueur a finit
-        if (compterNombreDeCartesdUnJoueur(aQuiDeJouer-1,memoryShared->jeu_de_carte)==0) {
-            printf("Jeu finis, joueur %d a gagné (test à 22 cartes)", aQuiDeJouer);
-            //envoyer un signal de fin de jeu aux autres processus
-            for (int i = 1; i < NB_JOUEURS + 1; i++) {
-                kill(memoryShared->idProcessus[i], SIGUSR2);
-                printf("SIGUSR2 envoyé à joueur %d", i);
-            }
-            //mettre flag de la fin de partie à 1, pour sortir de la boucle while
-            finPartie = 1;
         }
 
-
-
+        //ppur analyser si un joueur a gagné après lors du prochain passage dans le while
+        joueur_precedent=aQuiDeJouer;
 
         detachSharedMemory(memoryShared);
         sem_post(semProtectSharedMemory);// Fin de zone critique
