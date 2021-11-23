@@ -1,4 +1,4 @@
-#Introduction 
+# Introduction 
 
 Nous avons réalisé un jeu qui se nomme le président. 
 Le but du jeu du président est de se débarrasser le premier de toutes ses cartes.
