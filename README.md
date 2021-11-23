@@ -1,10 +1,8 @@
-# president-linux-processus-
+#Introduction 
 
-
-
-
-# Architecture 
-
+Nous avons réalisé un jeu qui se nomme le président. 
+Le but du jeu du président est de se débarrasser le premier de toutes ses cartes.
+Ce jeu se joue idéalement à 4 personnes mais il est possible de jouer jusqu’à 6.
 
 # Fonctionnement de la relation client serveur 
 
@@ -24,7 +22,3 @@
     4. Au bout des 3 secondes il va écrire dans la memoire partagée la carte 
 
 
-
-3. Dev à faire 
-   1. Ajouter un tableau avec le nombre de carte de chaque joueur dans les fichiers pour la structure. 
-   Exemple 
